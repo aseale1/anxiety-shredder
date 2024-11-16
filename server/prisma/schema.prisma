@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model anxiety_source {
+  anx_id     Int          @id @default(autoincrement())
+  anx_name   String       @unique @db.VarChar(255)
+  challenges challenges[]
+  factor     factor[]
+  user_anx   user_anx[]
+}
+
+model chall_conditions {
+  chall_id   Int
+  con_id     Int
+  challenges challenges @relation(fields: [chall_id], references: [chall_id], onDelete: Cascade, onUpdate: NoAction)
+  conditions conditions @relation(fields: [con_id], references: [con_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([chall_id, con_id])
+}
+
+model challenges {
+  chall_id         Int                @id @default(autoincrement())
+  firebase_uid     String?            @db.VarChar(255)
+  anx_id           Int?
+  chall_level      String?            @db.VarChar(255)
+  completed        Boolean?           @default(false)
+  chall_conditions chall_conditions[]
+  anxiety_source   anxiety_source?    @relation(fields: [anx_id], references: [anx_id], onDelete: Cascade, onUpdate: NoAction)
+  users            users?             @relation(fields: [firebase_uid], references: [firebase_uid], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model conditions {
+  con_id           Int                @id @default(autoincrement())
+  factor_id        Int?
+  condition_name   String             @db.VarChar(255)
+  difficulty_level Int?
+  chall_conditions chall_conditions[]
+  factor           factor?            @relation(fields: [factor_id], references: [factor_id], onDelete: Cascade, onUpdate: NoAction)
+  user_con_rating  user_con_rating[]
+}
+
+model factor {
+  factor_id      Int             @id @default(autoincrement())
+  anx_id         Int?
+  factor_name    String          @db.VarChar(255)
+  conditions     conditions[]
+  anxiety_source anxiety_source? @relation(fields: [anx_id], references: [anx_id], onDelete: Cascade, onUpdate: NoAction)
+  user_factor    user_factor[]
+}
+
+model user_anx {
+  firebase_uid   String         @db.VarChar(255)
+  anx_id         Int
+  anxiety_source anxiety_source @relation(fields: [anx_id], references: [anx_id], onDelete: NoAction, onUpdate: NoAction)
+  users          users          @relation(fields: [firebase_uid], references: [firebase_uid], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([firebase_uid, anx_id])
+}
+
+model user_con_rating {
+  firebase_uid String     @db.VarChar(255)
+  con_id       Int
+  rating       Int?
+  conditions   conditions @relation(fields: [con_id], references: [con_id], onDelete: Cascade, onUpdate: NoAction)
+  users        users      @relation(fields: [firebase_uid], references: [firebase_uid], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([firebase_uid, con_id])
+}
+
+model user_factor {
+  firebase_uid String @db.VarChar(255)
+  factor_id    Int
+  factor       factor @relation(fields: [factor_id], references: [factor_id], onDelete: NoAction, onUpdate: NoAction)
+  users        users  @relation(fields: [firebase_uid], references: [firebase_uid], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([firebase_uid, factor_id])
+}
+
+model users {
+  firebase_uid    String            @id @db.VarChar(255)
+  email           String            @unique @db.VarChar(255)
+  first_name      String?           @db.VarChar(255)
+  challenges      challenges[]
+  user_anx        user_anx[]
+  user_con_rating user_con_rating[]
+  user_factor     user_factor[]
+}
