@@ -1,45 +1,48 @@
-import React, { useEffect, useState } from "react";
-import {auth, onAuthStateChangedListener } from "../firebase";
-import axios from "axios";
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+
+type User = {
+  firebase_uid: string;
+  email: string;
+  first_name: string;
+};
 
 const Home = () => {
-  const [userInfo, setUserInfo] = useState<{ email: string; first_name: string | null } | null>(null);
+  const { currentUser } = useAuth(); 
+  const [userData, setUserData] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChangedListener(async (user) => {
-        if (user) {
-          try {
-            const response = await axios.get(`/api/users/${user.uid}`);
-            setUserInfo(response.data);
-          } catch (err) {
-            console.error('Error fetching user data:', err);
-          } finally {
-            setLoading(false);
-          }
-        } else {
-          console.log('No user signed in');
+    if (currentUser) {
+      axios
+        .get(`/api/user/${currentUser.uid}`) 
+        .then((response) => {
+          setUserData(response.data);
           setLoading(false);
-        }
-      });
-  
-      return () => unsubscribe;
-    }, []);
-  
-    if (loading) return <p>Loading...</p>;
-  
-    return (
-      <div>
-        {userInfo ? (
-          <div>
-            <h1>Welcome, {userInfo.first_name || 'User'}!</h1>
-            <p>Email: {userInfo.email}</p>
-          </div>
-        ) : (
-          <p>No user data found</p>
-        )}
-      </div>
-    );
-  };
-  
-  export default Home;
+        })
+        .catch((error) => {
+          console.error("Error fetching user data:", error);
+          setLoading(false);
+        });
+    }
+  }, [currentUser]);
+
+  if (loading) return <p>Loading...</p>;
+
+  return (
+    <div className = 'h-screen w-screen bg-amber-50'>
+      <h1 className = 'text-center text-black font-blaka' >Welcome, {userData?.first_name}!</h1>
+      {userData ? (
+        <div>
+          <p className = 'text-center text-black'><strong>Email:</strong> {userData.email}</p>
+          <p className = 'text-center text-black'><strong>Name:</strong> {userData.first_name}</p>
+        </div>
+      ) : (
+        <p>No user data available.</p>
+      )}
+    </div>
+  );
+};
+
+export default Home;

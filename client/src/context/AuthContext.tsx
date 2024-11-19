@@ -3,7 +3,7 @@ import { onAuthStateChanged, User, UserCredential, signInWithEmailAndPassword, c
 import { auth } from "../firebase.ts";
 
 interface AuthContextProps {
-  user: User | null;
+  currentUser: User | null;
   logIn: (email: string, password: string) => Promise<UserCredential>;
   signUp: (email: string, password: string) => Promise<UserCredential>;
   logOut: () => Promise<void>;
@@ -12,7 +12,7 @@ interface AuthContextProps {
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [currentUser, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, setUser);
@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logOut = () => signOut(auth);
 
   return (
-    <AuthContext.Provider value={{ user, logIn, signUp, logOut }}>
+    <AuthContext.Provider value={{ currentUser, logIn, signUp, logOut }}>
       {children}
     </AuthContext.Provider>
   );

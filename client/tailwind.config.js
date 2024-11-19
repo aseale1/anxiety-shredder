@@ -1,12 +1,18 @@
 /** @type {import('tailwindcss').Config} */
-export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+module.exports = {
+  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+
   theme: {
-    extend: {},
+    fontFamily:{
+      blaka: ['Blaka', 'serif'],
+      lato: ['lato', 'sans-serif']
+    },
+    backgroundImage: {
+      skislope: "url('/src/assets/skiLiftStock.jpg')",
+
+    },
+
   },
-  plugins: [],
 }
+
 

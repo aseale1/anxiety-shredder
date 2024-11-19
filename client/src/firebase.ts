@@ -18,11 +18,17 @@ export const signUp = (email: string, password: string) => {
     return createUserWithEmailAndPassword(auth, email, password);
   };
   
-  export const logIn = (email: string, password: string) => {
-    return signInWithEmailAndPassword(auth, email, password);
+  export const logIn = async (email: string, password: string) => {
+    try {
+      return await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      console.error("Error logging in:", error);
+      throw error;
+    }
   };
   
   export const onAuthStateChangedListener = (callback: (user: any) => void) => {
+    console.log('Setting up auth listener');
     onAuthStateChanged(auth, callback);
   };
   
