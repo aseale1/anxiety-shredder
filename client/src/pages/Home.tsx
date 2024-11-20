@@ -2,47 +2,92 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
-type User = {
+interface UserData {
   firebase_uid: string;
   email: string;
   first_name: string;
-};
+}
+interface UserAnx {
+  firebase_uid: string;
+  anx_id: number;
+  anxiety_source: AnxSource;
+}
+interface AnxSource {
+  anx_id: number;
+  anx_name: string;
+}
 
 const Home = () => {
   const { currentUser } = useAuth(); 
-  const [userData, setUserData] = useState<User | null>(null);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [anxieties, setAnxieties] = useState<UserAnx[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const fetchUserData = async (uid: string) => {
+    const response = await axios.get(`/api/user/${uid}`);
+    return response.data;
+  };
+
+  const fetchUserAnxieties = async (uid: string) => {
+    const response = await axios.get(`/api/home/${uid}/anxieties`);
+    return response.data;
+  };
 
   useEffect(() => {
     if (currentUser) {
-      axios
-        .get(`/api/user/${currentUser.uid}`) 
-        .then((response) => {
-          setUserData(response.data);
+      const fetchData = async () => {
+        setLoading(true);
+        try {
+      // Promise.all fetches both data points simultaneously
+          const [user, anxieties] = await Promise.all([
+            fetchUserData(currentUser.uid),
+            fetchUserAnxieties(currentUser.uid),
+          ]);
+          setUserData(user);
+          setAnxieties(anxieties);
+        } catch (error) {
+          console.error("Error fetching data:", error);
+        } finally {
           setLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error fetching user data:", error);
-          setLoading(false);
-        });
+        }
+      };
+
+      fetchData();
     }
   }, [currentUser]);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <p className='h-screen w-screen bg-amber-50 text-center text-2xl text-black font-blaka'>Loading...</p>;
 
   return (
-    <div className = 'h-screen w-screen bg-amber-50'>
-      <h1 className = 'text-center text-black font-blaka' >Welcome, {userData?.first_name}!</h1>
-      {userData ? (
-        <div>
-          <p className = 'text-center text-black'><strong>Email:</strong> {userData.email}</p>
-          <p className = 'text-center text-black'><strong>Name:</strong> {userData.first_name}</p>
+    <div className="h-screen w-screen bg-amber-50">
+      <h1 className="text-center text-black font-blaka">
+        Welcome, {userData?.first_name || 'Loading...'}
+      </h1>
+      {loading ? (
+        <p className="text-center text-black font-lato">Loading...</p>
+      ) : userData ? (
+        <div className="text-center">
+          <p className="text-black font-lato">Email: {userData.email}</p>
+          <p className="text-black font-lato">Name: {userData.first_name}</p>
+  
+          <h2 className="mt-4 text-lg font-semibold text-black">You are working on:</h2>
+          {Array.isArray(anxieties) && anxieties.length > 0 ? (
+            <ul className="mt-2 space-y-2">
+              {anxieties.map((anx) => (
+                <li key={anx.anx_id} className="text-black font-lato">
+                  <p className="text-black font-lato"> - {anx.anxiety_source.anx_name} </p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-black font-lato">No anxieties found.</p>
+          )}
         </div>
       ) : (
-        <p>No user data available.</p>
+        <p className="text-center text-black font-lato">No user data available.</p>
       )}
     </div>
   );
+   
 };
-
 export default Home;
