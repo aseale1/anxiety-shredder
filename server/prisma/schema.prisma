@@ -39,7 +39,6 @@ model conditions {
   con_id           Int                @id @default(autoincrement())
   factor_id        Int?
   condition_name   String             @db.VarChar(255)
-  difficulty_level Int?
   chall_conditions chall_conditions[]
   factor           factor?            @relation(fields: [factor_id], references: [factor_id], onDelete: Cascade, onUpdate: NoAction)
   user_con_rating  user_con_rating[]
