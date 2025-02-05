@@ -4,6 +4,7 @@ import cors from 'cors';
 import userRouter from './routes/userRoutes';
 import homeRouter from './routes/homeRoutes';
 import testingRouter from './routes/testingRoutes';
+import anxietyRouter from './routes/anxietyRoutes';
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.get('/', (req: Request, res: Response) => {
 app.use('/api/user/', userRouter);
 app.use('/api/home/', homeRouter);
 app.use('/api', testingRouter);
+app.use('/api', anxietyRouter);
 console.log("Home router mounted on /home");
 
 app.listen(PORT, () => {

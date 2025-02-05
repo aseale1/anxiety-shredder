@@ -6,7 +6,7 @@ const homeRouter = Router();
 
 const getUserAnxietiesHandler: RequestHandler<{ firebase_uid: string }> = async (req, res) => {
     const { firebase_uid } = req.params;
-    console.log("getUserAnxietiesHandler activated");
+    //console.log("getUserAnxietiesHandler activated");
 
     try {
       const anxieties = await prisma.user_anx.findMany({
@@ -15,7 +15,7 @@ const getUserAnxietiesHandler: RequestHandler<{ firebase_uid: string }> = async 
           anxiety_source: true,
         },
       });
-      console.log("Number of anxieties", anxieties.length);
+      //console.log("Number of anxieties", anxieties.length);
 
       if (anxieties.length > 0) {
         res.json(anxieties);

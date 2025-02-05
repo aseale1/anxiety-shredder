@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface UserData {
   firebase_uid: string;
@@ -22,6 +23,7 @@ const Home = () => {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [anxieties, setAnxieties] = useState<UserAnx[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   const fetchUserData = async (uid: string) => {
     const response = await axios.get(`/api/user/${uid}`);
@@ -56,6 +58,7 @@ const Home = () => {
     }
   }, [currentUser]);
 
+
   if (loading) return <p className='h-screen w-screen bg-amber-50 text-center text-2xl text-black font-blaka'>Loading...</p>;
 
   return (
@@ -82,6 +85,7 @@ const Home = () => {
           ) : (
             <p className="text-black font-lato">No anxieties found.</p>
           )}
+          <button onClick={() => navigate("/add-anxiety")} className="bg-black-500 font-lato text-white p-2 mt-4">Add an Anxiety Source</button>
         </div>
       ) : (
         <p className="text-center text-black font-lato">No user data available.</p>

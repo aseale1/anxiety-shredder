@@ -9,7 +9,7 @@ interface UserRequestParams {
 }
 
 const getUserHandler: RequestHandler<UserRequestParams> = async (req, res) => {
-  console.log("getUserHandler activated");
+  //console.log("getUserHandler activated");
   const { firebase_uid } = req.params;
 
   try {
