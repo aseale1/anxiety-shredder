@@ -66,4 +66,25 @@ anxietyRouter.get("/anxieties/:anx_id/factors", async (req, res) => {
         }
     });
 
+    // Fetch a user's untracked anxieties
+    anxietyRouter.get("/user/:firebase_uid/anxieties/untracked-anxieties", async (req, res) => {
+      const { firebase_uid } = req.params;
+      try {
+        const untrackedAnxieties = await prisma.anxiety_source.findMany({
+          where: {
+            NOT: {
+              user_anx: {
+                some: {
+                  firebase_uid,
+                },
+              },
+            },
+          },
+        });
+        res.status(200).json(untrackedAnxieties);
+      } catch (err) {
+        res.status(500).json({ error: "Error fetching untracked anxieties" });
+      }
+    });
+      
 export default anxietyRouter;

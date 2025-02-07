@@ -31,7 +31,7 @@ const Home = () => {
   };
 
   const fetchUserAnxieties = async (uid: string) => {
-    const response = await axios.get(`/api/home/${uid}/anxieties`);
+    const response = await axios.get(`/api/user/${uid}/anxieties`);
     return response.data;
   };
 
