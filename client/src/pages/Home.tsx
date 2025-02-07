@@ -78,14 +78,14 @@ const Home = () => {
             <ul className="mt-2 space-y-2">
               {anxieties.map((anx) => (
                 <li key={anx.anx_id} className="text-black font-lato">
-                  <p className="text-black font-lato"> - {anx.anxiety_source.anx_name} </p>
+                  <button className="p-2 rounded-full bg-[#7f85a1] text-black font-lato"> {anx.anxiety_source.anx_name} </button>
                 </li>
               ))}
             </ul>
           ) : (
             <p className="text-black font-lato">No anxieties found.</p>
           )}
-          <button onClick={() => navigate("/add-anxiety")} className="bg-black-500 font-lato text-white p-2 mt-4">Add an Anxiety Source</button>
+          <button onClick={() => navigate("/add-anxiety")} className="bg-black-500 font-lato text-white p-2 mt-10">+ Add an Anxiety Source</button>
         </div>
       ) : (
         <p className="text-center text-black font-lato">No user data available.</p>

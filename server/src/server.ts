@@ -2,7 +2,6 @@ import express, { Request, Response, RequestHandler } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import userRouter from './routes/userRoutes';
-import homeRouter from './routes/homeRoutes';
 import testingRouter from './routes/testingRoutes';
 import anxietyRouter from './routes/anxietyRoutes';
 
@@ -22,10 +21,8 @@ app.get('/', (req: Request, res: Response) => {
 
 // Routes
 app.use('/api/user/', userRouter);
-app.use('/api/home/', homeRouter);
 app.use('/api', testingRouter);
 app.use('/api', anxietyRouter);
-console.log("Home router mounted on /home");
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

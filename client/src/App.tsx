@@ -14,7 +14,6 @@ const App = () => {
           <Route path="/home" element={<Home />} />
           <Route path="/testing" element={<Testing />} />
           <Route path="/add-anxiety" element={<AddAnxiety />} />
-
         </Routes>
       </Router>
     </AuthProvider>
