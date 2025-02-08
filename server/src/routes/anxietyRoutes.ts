@@ -86,5 +86,19 @@ anxietyRouter.get("/anxieties/:anx_id/factors", async (req, res) => {
         res.status(500).json({ error: "Error fetching untracked anxieties" });
       }
     });
+
+    // Fetch conditions for some factor
+    anxietyRouter.get("/factors/:factor_id/conditions", async (req, res) => {
+      const factor_id = parseInt(req.params.factor_id);
+      try {
+        const conditions = await prisma.conditions.findMany({
+          where: { factor_id },
+        });
+        res.status(200).json(conditions);
+      } catch (err) {
+        res.status(500).json({ error: "Error fetching conditions" });
+      }
+    });
+
       
 export default anxietyRouter;
