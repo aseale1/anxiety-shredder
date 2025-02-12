@@ -47,39 +47,37 @@ const AddAnxiety: React.FC = () => {
         });
     }
 
-    const handleFactorSelect = (factor: any) => {
-        if (selectedFactors.includes(factor.factor_id)) {
-            setSelectedFactors(selectedFactors.filter((f) => f !== factor.factor_id));
-            setConditions(prev => {
-                const newConditions = { ...prev };
-                delete newConditions[factor.factor_id];
-                return newConditions;
-            });
-            setRankings(prev => {
-                const newRankings = { ...prev };
-                delete newRankings[factor.factor_id];
-                return newRankings;
-            });
-        } else {
-            setSelectedFactors([...selectedFactors, factor.factor_id]);
-            axios.get(`/api/factors/${factor.factor_id}/conditions`).then((response) => {
-                console.log(`Fetched conditions for factor ${factor.factor_id}:`, response.data);
-                setConditions((prev) => [...prev, { factor_id: factor.factor_id, conditions: response.data }]);
-            }).catch((error) => {
-                console.error("Error fetching conditions:", error);
-            });
-            setSelectedFactorName(factor.factor_name);
-        }
+    // Function to handle factor selection and fetch conditions
+    const handleFactorSelect = (factor: any, anxiety: any) => {
+        setSelectedFactors(factor);
+        setSelectedFactorName(factor.factor_name);
+        axios.get(`/api/anxieties/${anxiety}/factors`).then((response) => {
+            console.log(`Fetched factors for anxiety ${anxiety}:`, response.data);
+            setFactors(response.data);
+        }).catch((error) => {
+            console.error("Error fetching factors:", error);
+        });
+
+        axios.get(`/api/factors/${factor.factor_id}/conditions`).then((response) => {
+            console.log(`Fetched conditions for factor ${factor.factor_id}:`, response.data);
+            setConditions(response.data);
+        }).catch((error) => {
+            console.error("Error fetching conditions:", error);
+        });
+
     }
 
-    const handleRankingChange = (condition_id: number, rating: number) => {
-        setRankings((prev) => {
-            const existingRanking = prev.find((r) => r.condition_id === condition_id);
+    const handleRankingChange = (factor_id: number, rating: number) => {
+        console.log(`Rating for factor ${factor_id} changed to ${rating}`);
+        setRankings((prevRankings) => {
+            const newRankings = [...prevRankings];
+            const existingRanking = newRankings.find((r) => r.condition_id === factor_id);
             if (existingRanking) {
-                return prev.map((r) => (r.condition_id === condition_id ? { ...r, rating } : r));
+                existingRanking.rating = rating;
             } else {
-                return [...prev, { condition_id, rating }];
+                newRankings.push({ condition_id: factor_id, rating });
             }
+            return newRankings;
         });
     }
 
@@ -94,12 +92,11 @@ const AddAnxiety: React.FC = () => {
         }
         try {
             // Add anxiety to user
-            await axios.post("/api/user-anxiety", { firebase_uid: currentUser.uid, anx_id: selectedAnxieties });
+            await axios.post(`/api/user-anxiety`, { firebase_uid: currentUser.uid, anx_id: selectedAnxieties });
             // Add factors to user
-            await axios.post("/api/user-factor", { firebase_uid: currentUser.uid, factor_id: selectedFactors });
+            await axios.post(`/api/user-factor`, { firebase_uid: currentUser.uid, factor_id: selectedFactors });
             // Add conditions to user
-            await axios.post("/api/user-condition", { firebase_uid: currentUser.uid, conditions: rankings });
-            navigate("/home");
+            await axios.post(`/api/${currentUser.uid}/user-condition`, { firebase_uid: currentUser.uid, conditions: rankings });
         } catch (error) {
             console.error("Error adding anxiety, factors, and conditions:", error);
         }
@@ -132,8 +129,8 @@ const AddAnxiety: React.FC = () => {
                         <label key={factor.factor_id} className="block text-black font-lato">
                             <input
                                 type="checkbox"
-                                checked={selectedFactors.includes(factor.factor_id)} 
-                                onChange={() => handleFactorSelect(factor)}
+                                //checked={selectedFactors.includes(factor.factor_id)} 
+                                onChange={() => handleFactorSelect(factor, selectedAnxieties)}
                             />
                             {factor.factor_name}
                         </label>
@@ -142,10 +139,10 @@ const AddAnxiety: React.FC = () => {
             )}
 
             {/* Display conditions for selected factors with a dropdown for ranking */}
-            {selectedFactors.map(factor_id => (
-                <div key={factor_id}>
-                    <h2 className="text-xl text-black font-semibold mb-2">When it comes to "{selectedFactorName}," how anxious do these conditions make you feel?</h2>
-                    {conditions.find((c) => c.factor_id === factor_id)?.conditions.map((condition) => (
+            {selectedFactorName && (
+                <div>
+                    <h2 className="text-xl text-black font-semibold mb-2">How does it make you feel?</h2>
+                    {conditions.find((c) => c.factor_id === selectedFactors[0])?.conditions.map((condition) => (
                         <div key={condition.condition_id}>
                             <label className="block text-black font-lato">
                                 {condition.condition_name}
@@ -162,8 +159,7 @@ const AddAnxiety: React.FC = () => {
                         </div>
                     ))}
                 </div>
-            ))}
-            
+            )}
 
             {/* Submit */}
             <button onClick={handleSubmit} className="p-2 mt-4 bg-black text-white font-lato">Submit</button>
