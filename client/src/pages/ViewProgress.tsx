@@ -60,16 +60,16 @@ const ViewProgress: React.FC = () => {
     return (
         <div className="h-screen w-screen bg-amber-50">
          {anxiety && <h1 className="text-6xl text-center text-black font-blaka">{anxiety.anx_name}</h1>}
-         <button className="mt-2 p-2 bg-red-500 text-white" onClick={() => setEditMode(!editMode)}>
+         <button className="absolute top-0 right-0 mt-2 p-2 bg-red-500 text-white" onClick={() => setEditMode(!editMode)}>
             {editMode ? "Cancel" : "Edit"}
          </button>
       {editMode && (
-        <button className="mt-2 p-2 bg-red-600 text-white" onClick={handleDeleteAnxiety}>Remove Anxiety</button>
+        <button className="mt-2 p-2 font-lato bg-red-600 text-white" onClick={handleDeleteAnxiety}>Remove Anxiety</button>
       )}
       <div className="mt-4" >
         {factors.map(factor => (
-            <div key={factor.factor_id} className="mb-4 p-4 border rounded">
-            <h2 className="text-xl text-black font-semibold">{factor.factor_name}</h2>
+            <div key={factor.factor_id} className="mb-4">
+            <h2 className="text-xl text-black font-semibold">- {factor.factor_name}</h2>
             {editMode && (
                 <button className="mt-1 p-2 bg-red-500 text-white" onClick={() => handleDeleteFactor(factor.factor_id)}>
                 Remove Factor
