@@ -52,28 +52,26 @@ const getUserAnxietiesHandler: RequestHandler<{ firebase_uid: string }> = async 
     }
   };
 
-  // Update condition ratings for a user
-  userRouter.post('/:firebase_uid/condition-ratings', async (req, res) => {
-    const { firebase_uid } = req.params;
-    const { condition_ratings }: { condition_ratings: { condition_id: string; rating: number }[] } = req.body;
-
-    try {
-      const user = await prisma.$transaction(
-        condition_ratings.map(({ condition_id, rating }) =>
-          prisma.user_con_rating.upsert({
-            where: { firebase_uid_con_id: { firebase_uid, con_id: Number(condition_id) } },
-            update: { rating },
-            create: { firebase_uid, con_id: Number(condition_id), rating },
+  // Add a condition to a user
+  userRouter.post("/:firebase_uid/user-condition", async (req, res) => {
+    const { firebase_uid, conditions } = req.body;
+      try {
+        const newCondition = await prisma.$transaction(
+          conditions.map((condition: any) => {
+            return prisma.user_con_rating.create({
+              data: {
+                firebase_uid,
+                con_id: condition.condition_id,
+                rating: condition.rating,
+              },
+            })
           })
         )
-      );
-      res.json({ message: 'Condition ratings updated successfully' });
-    } catch (error) {
-      console.error('Error updating condition ratings:', error);
-      res.status(500).json({ error: 'Failed to update condition ratings' });
-    }
-  });
-
+        res.status(201).json(newCondition);
+      } catch (err) {
+        res.status(500).json({ error: "Error adding condition to user" });
+      }
+    });
 
 
 userRouter.get('/:firebase_uid/anxieties', getUserAnxietiesHandler);

@@ -10,10 +10,14 @@ const AddAnxiety: React.FC = () => {
     const [selectedAnxieties, setSelectedAnxieties] = useState<number | null>(null);
     const [factors, setFactors] = useState<{ factor_id: number; factor_name: string }[]>([]);
     const [selectedFactors, setSelectedFactors] = useState<number[]>([]);
-    const [conditions, setConditions] = useState<{ condition_id: number; condition_name: string; rating: number }[]>([]);
+    const [conditions, setConditions] = useState<{ factor_id: number; conditions: { condition_id: number; condition_name: string; rating: number }[] }[]>([]);
+    const [rankings, setRankings] = useState<{ condition_id: number; rating: number }[]>([]);  
     const [selectedFactorName, setSelectedFactorName] = useState<string | null>(null);
 
     useEffect(() => {
+        console.log("useEffect Component Mounted - Fetching untracked anxieties");
+        console.log("Conditions before rendering:", conditions);
+
         const fetchUntrackedAnxieties = async () => {
             try {
                 if (currentUser) {
@@ -33,71 +37,74 @@ const AddAnxiety: React.FC = () => {
         fetchUntrackedAnxieties();
     }, [currentUser]);
 
-    const fetchConditions = async (factor_id: number) => {
-        try {
-            const response = await axios.get(`/api/factors/${factor_id}/conditions`);
-            console.log(`Fetched conditions for factor ${factor_id}:`, response.data);
-            setConditions(response.data);
-        } catch (error) {
-            console.error("Error fetching conditions:", error);
-        }
-    };
-
-    const handleAnxietyChange = (anx_id: number) => {
-        setSelectedAnxieties(anx_id);
-        axios.get(`/api/anxieties/${anx_id}/factors`).then((response) => {
-            console.log(`Fetched factors for anxiety ${anx_id}:`, response.data);
+    const handleAnxietySelect = (anxiety: any) => {
+        setSelectedAnxieties(anxiety);
+        axios.get(`/api/anxieties/${anxiety}/factors`).then((response) => {
+            console.log(`Fetched factors for anxiety ${anxiety}:`, response.data);
             setFactors(response.data);
         }).catch((error) => {
             console.error("Error fetching factors:", error);
         });
-    };
+    }
 
-    const handleFactorChange = (factor_id: number, factor_name: string) => {
-        setSelectedFactors((prev) => {
-            const newSelection = new Set(prev);
-            newSelection.has(factor_id) ? newSelection.delete(factor_id) : newSelection.add(factor_id);
-            return Array.from(newSelection);
+    const handleFactorSelect = (factor: any) => {
+        if (selectedFactors.includes(factor.factor_id)) {
+            setSelectedFactors(selectedFactors.filter((f) => f !== factor.factor_id));
+            setConditions(prev => {
+                const newConditions = { ...prev };
+                delete newConditions[factor.factor_id];
+                return newConditions;
+            });
+            setRankings(prev => {
+                const newRankings = { ...prev };
+                delete newRankings[factor.factor_id];
+                return newRankings;
+            });
+        } else {
+            setSelectedFactors([...selectedFactors, factor.factor_id]);
+            axios.get(`/api/factors/${factor.factor_id}/conditions`).then((response) => {
+                console.log(`Fetched conditions for factor ${factor.factor_id}:`, response.data);
+                setConditions((prev) => [...prev, { factor_id: factor.factor_id, conditions: response.data }]);
+            }).catch((error) => {
+                console.error("Error fetching conditions:", error);
+            });
+            setSelectedFactorName(factor.factor_name);
+        }
+    }
+
+    const handleRankingChange = (condition_id: number, rating: number) => {
+        setRankings((prev) => {
+            const existingRanking = prev.find((r) => r.condition_id === condition_id);
+            if (existingRanking) {
+                return prev.map((r) => (r.condition_id === condition_id ? { ...r, rating } : r));
+            } else {
+                return [...prev, { condition_id, rating }];
+            }
         });
-        setSelectedFactorName(factor_name);
-        fetchConditions(factor_id);
-    };
+    }
 
     const handleSubmit = async () => {
         if (!currentUser) {
             console.error("User is not authenticated");
             return;
         }
-
-        try {
-            {/* Add anxiety to user */}
-            const addAnxietyResponse = await axios.post("/api/user-anxiety", {
-                firebase_uid: currentUser.uid,
-                anx_id: selectedAnxieties,
-            });
-
-            {/* Add factor to user */}
-            for (const factor_id of selectedFactors) {
-                const addFactorResponse = await axios.post("/api/user-factor", {
-                    firebase_uid: currentUser.uid,
-                    factor_id,
-                });
-            }
-
-            {/* Add conditions to user */}
-            const condition_ratings = conditions.map((condition) => ({
-                condition_id: condition.condition_id,
-                rating: condition.rating,
-            }));
-            const addConditionsResponse = await axios.post(`/api/user/${currentUser.uid}/condition-ratings`, {
-                condition_ratings,
-            });
-        } catch (error) {
-            console.error("Error adding anxiety source:", error);
+        if (!selectedAnxieties || selectedFactors.length === 0) {
+            console.error("Anxiety and factors must be selected");
+            return;
         }
-        {/* Redirect to home */}
-        navigate("/home");
-    };
+        try {
+            // Add anxiety to user
+            await axios.post("/api/user-anxiety", { firebase_uid: currentUser.uid, anx_id: selectedAnxieties });
+            // Add factors to user
+            await axios.post("/api/user-factor", { firebase_uid: currentUser.uid, factor_id: selectedFactors });
+            // Add conditions to user
+            await axios.post("/api/user-condition", { firebase_uid: currentUser.uid, conditions: rankings });
+            navigate("/home");
+        } catch (error) {
+            console.error("Error adding anxiety, factors, and conditions:", error);
+        }
+    }
+
 
     return (
         <div className="p-4 h-screen w-screen bg-amber-50">
@@ -111,7 +118,7 @@ const AddAnxiety: React.FC = () => {
                         type="radio"
                         name="anxieties"
                         value={anxiety.anx_id}
-                        onChange={() => handleAnxietyChange(anxiety.anx_id)}
+                        onChange={() => handleAnxietySelect(anxiety.anx_id)}
                     />
                     {anxiety.anx_name}
                 </label>
@@ -126,7 +133,7 @@ const AddAnxiety: React.FC = () => {
                             <input
                                 type="checkbox"
                                 checked={selectedFactors.includes(factor.factor_id)} 
-                                onChange={() => handleFactorChange(factor.factor_id, factor.factor_name)}
+                                onChange={() => handleFactorSelect(factor)}
                             />
                             {factor.factor_name}
                         </label>
@@ -134,43 +141,29 @@ const AddAnxiety: React.FC = () => {
                 </div>
             )}
 
-            {/* Display conditions for selected factors with a labeled rating slider*/}
-            {conditions.length > 0 && (
-                <div>
-                    <h2 className="text-xl text-black font-semibold mb-2">When it comes to {selectedFactorName}, how anxious do these conditions make you feel?</h2>
-                    <p className="text-l text-black italic mb-2">0: not anxious, 4: extremely anxious</p>
-
-                    {conditions.map((condition) => (
-                        <div key={condition.condition_id} className="bg-amber-50 flex flex-col items-center mb-4">
-                            <label className="block text-black font-lato mb-2">{condition.condition_name}</label>
-                            <div className="w-full">
-                                <div className="flex justify-between text-black px-2 mb-1">
-                                    {[0, 1, 2, 3, 4].map((value) => (
-                                        <span key={value}>{value}</span>
-                                    ))}
-                                </div>
-                                <input
-                                    type="range"
-                                    min="0"
-                                    max="4"
-                                    value={condition.rating}
-                                    onChange={(e) => {
-                                        const newRating = parseInt(e.target.value);
-                                        setConditions((prev) => prev.map((c) => {
-                                            if (c.condition_id === condition.condition_id) {
-                                                return { ...c, rating: newRating };
-                                            }
-                                            return c;
-                                        }));
-                                    }}
-                                    className="bg-amber-50 w-full"
-                                />
-                                <span className="block text-center mt-1">{condition.rating}</span>
-                            </div>
+            {/* Display conditions for selected factors with a dropdown for ranking */}
+            {selectedFactors.map(factor_id => (
+                <div key={factor_id}>
+                    <h2 className="text-xl text-black font-semibold mb-2">When it comes to "{selectedFactorName}," how anxious do these conditions make you feel?</h2>
+                    {conditions.find((c) => c.factor_id === factor_id)?.conditions.map((condition) => (
+                        <div key={condition.condition_id}>
+                            <label className="block text-black font-lato">
+                                {condition.condition_name}
+                            </label>
+                            <select
+                                value={rankings.find((r) => r.condition_id === condition.condition_id)?.rating || 0}
+                                onChange={(e) => handleRankingChange(condition.condition_id, parseInt(e.target.value))}
+                            >
+                                <option value={0}>Not anxious at all</option>
+                                <option value={1}>A little anxious (my heart beats a little faster)</option>
+                                <option value={2}>Very anxious (I feel uneasy and maybe nauseous)</option>
+                                <option value={3}>Extremely anxious (this makes me want to avoid the situation)</option>
+                            </select>
                         </div>
                     ))}
                 </div>
-            )}
+            ))}
+            
 
             {/* Submit */}
             <button onClick={handleSubmit} className="p-2 mt-4 bg-black text-white font-lato">Submit</button>
@@ -178,6 +171,7 @@ const AddAnxiety: React.FC = () => {
             <button onClick={() => navigate("/home")} className="p-2 mt-4 ml-4 bg-black text-white font-lato">Return to Home</button>
 
         </div>
+
     );
 };
 
