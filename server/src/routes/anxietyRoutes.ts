@@ -21,6 +21,22 @@ anxietyRouter.get("/anxieties", async (req, res) => {
     }
   });
 
+// Fetch specific anxiety
+anxietyRouter.get("/anxieties/:anx_id", async (req, res) => {
+  const anx_id = parseInt(req.params.anx_id);
+    try {
+      const anxiety = await prisma.anxiety_source.findUnique({
+        where: { anx_id },
+        include: {
+          factor: true,
+        },
+      });
+      res.status(200).json(anxiety);
+    } catch (err) {
+    res.status(500).json({ error: "Error fetching anxiety"})
+    }
+  });
+
 // Fetch all factors for some anxiety
 anxietyRouter.get("/anxieties/:anx_id/factors", async (req, res) => {
   const anx_id = parseInt(req.params.anx_id);

@@ -73,6 +73,86 @@ const getUserAnxietiesHandler: RequestHandler<{ firebase_uid: string }> = async 
       }
     });
 
+  // Fetch all user's factors for some anxiety
+  userRouter.get("/:firebase_uid/anxieties/:anx_id/factors", async (req, res) => {
+    const { firebase_uid } = req.params;
+    const anx_id = parseInt(req.params.anx_id, 10);
+      try {
+        const trackedFactors = await prisma.factor.findMany({
+          where: {
+            anx_id,
+            user_factor: {
+              some: {
+                firebase_uid,
+              },
+            },
+          },
+          include: {
+            user_factor: true,
+          },
+        });
+        res.status(200).json(trackedFactors);
+      } catch (err) {
+        res.status(500).json({ error: "Error fetching factors"})
+      }
+  });
+
+// Delete an anxiety from a user as well as the factors and conditions associated with it
+userRouter.delete("/:firebase_uid/anxieties/:anx_id/delete-anx", async (req, res) => {
+  const { firebase_uid } = req.params;
+  const anx_id = parseInt(req.params.anx_id, 10);
+
+  try {
+    await prisma.user_factor.deleteMany({
+      where: {
+        firebase_uid,
+        factor: {
+          anx_id,
+        },
+      },
+    });
+    await prisma.user_con_rating.deleteMany({
+      where: {
+        firebase_uid,
+      },
+    });
+    await prisma.user_anx.delete({
+      where: {
+        firebase_uid_anx_id: {
+          firebase_uid,
+          anx_id,
+        },
+      },
+    });
+    res.status(200).json({ message: "Anxiety deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "Error deleting anxiety" });
+  }
+});
+
+// Delete a factor from a user and delete the conditions associated with it
+userRouter.delete("/:firebase_uid/factors/:factor_id/delete-factor", async (req, res) => {
+  const { firebase_uid } = req.params;
+  const factor_id = parseInt(req.params.factor_id, 10);
+  try {
+    await prisma.user_factor.delete({
+      where: {
+        firebase_uid_factor_id: {
+          firebase_uid,
+          factor_id,
+        },
+      },
+    });
+    await prisma.user_con_rating.deleteMany({
+      where: {
+        firebase_uid,
+      },
+    });
+    res.status(200).json({ message: "Factor deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "Error deleting factor" });
+  }
+});
 
 userRouter.get('/:firebase_uid/anxieties', getUserAnxietiesHandler);
 userRouter.get('/:firebase_uid', getUserHandler);
