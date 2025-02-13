@@ -40,7 +40,7 @@ const AddAnxiety: React.FC = () => {
     const handleAnxietySelect = (anxiety: any) => {
         setSelectedAnxieties(anxiety);
         axios.get(`/api/anxieties/${anxiety}/factors`).then((response) => {
-            console.log(`Fetched factors for anxiety ${anxiety}:`, response.data);
+            console.log(`Fetched factors for anxiety ${anxiety} (${anxiety.anxiety_name}):`, response.data);
             setFactors(response.data);
         }).catch((error) => {
             console.error("Error fetching factors:", error);
@@ -50,22 +50,14 @@ const AddAnxiety: React.FC = () => {
     // Function to handle factor selection and fetch conditions
     const handleFactorSelect = (factor: any, anxiety: any) => {
         setSelectedFactors(factor);
-        setSelectedFactorName(factor.factor_name);
-        axios.get(`/api/anxieties/${anxiety}/factors`).then((response) => {
-            console.log(`Fetched factors for anxiety ${anxiety}:`, response.data);
-            setFactors(response.data);
-        }).catch((error) => {
-            console.error("Error fetching factors:", error);
-        });
-
-        axios.get(`/api/factors/${factor.factor_id}/conditions`).then((response) => {
-            console.log(`Fetched conditions for factor ${factor.factor_id}:`, response.data);
-            setConditions(response.data);
-        }).catch((error) => {
-            console.error("Error fetching conditions:", error);
-        });
-
-    }
+    setSelectedFactorName(factor.factor_name);
+    axios.get(`/api/factors/${factor.factor_id}/conditions`).then((response) => {
+        console.log(`Fetched conditions for factor ${factor.factor_id} (${factor.factor_name}):`, response.data);
+        setConditions(response.data);
+    }).catch((error) => {
+        console.error("Error fetching conditions:", error);
+    });
+}
 
     const handleRankingChange = (factor_id: number, rating: number) => {
         console.log(`Rating for factor ${factor_id} changed to ${rating}`);
@@ -124,7 +116,7 @@ const AddAnxiety: React.FC = () => {
             {/* Display factors for selected anxiety */}
             {selectedAnxieties && (
                 <div>
-                    <h2 className="flex text-xl text-black font-semibold mb-2">What about it causes anxiety?</h2>
+                    <h2 className="flex text-xl text-black font-semibold mb-2">What about {anxieties.find((a) => a.anx_id === selectedAnxieties)?.anx_name} causes anxiety?</h2>
                     {factors.map((factor) => (
                         <label key={factor.factor_id} className="block text-black font-lato">
                             <input
@@ -141,8 +133,8 @@ const AddAnxiety: React.FC = () => {
             {/* Display conditions for selected factors with a dropdown for ranking */}
             {selectedFactorName && (
                 <div>
-                    <h2 className="text-xl text-black font-semibold mb-2">How does it make you feel?</h2>
-                    {conditions.find((c) => c.factor_id === selectedFactors[0])?.conditions.map((condition) => (
+                    <h2 className="text-xl text-black font-semibold mb-2">When it comes to "{selectedFactorName}," how anxious do these conditions make you feel?</h2>
+                    {conditions.find((c) => c.factor_id === selectedFactors[0])?.conditions?.map((condition) => (
                         <div key={condition.condition_id}>
                             <label className="block text-black font-lato">
                                 {condition.condition_name}
@@ -154,7 +146,7 @@ const AddAnxiety: React.FC = () => {
                                 <option value={0}>Not anxious at all</option>
                                 <option value={1}>A little anxious (my heart beats a little faster)</option>
                                 <option value={2}>Very anxious (I feel uneasy and maybe nauseous)</option>
-                                <option value={3}>Extremely anxious (this makes me want to avoid the situation)</option>
+                                <option value={3}>Extremely anxious (I want to avoid the situation)</option>
                             </select>
                         </div>
                     ))}
