@@ -23,7 +23,7 @@ const ViewProgress: React.FC = () => {
                 setAnxiety(anxResponse.data);
 
                 // Fetch user's factors for the selected anxiety
-                const factorResponse = await axios.get(`/api/user/${currentUser?.uid}/anxieties/${anx_id}/factors`);
+                const factorResponse = await axios.get(`/api/${currentUser?.uid}/anxieties/${anx_id}/factors`);
                 setFactors(Array.isArray(factorResponse.data) ? factorResponse.data : []);
                 console.log(`Fetched factors for anxiety ${anxiety?.anx_name}:`, factorResponse.data);
             } catch (error) {  
@@ -37,7 +37,7 @@ const ViewProgress: React.FC = () => {
         try {
             const confirmDelete = window.confirm("Are you sure you want to remove this anxiety?");
             if (confirmDelete) {
-                await axios.delete(`/api/user/${currentUser?.uid}/anxieties/${anx_id}/delete-anx`);
+                await axios.delete(`/api/${currentUser?.uid}/anxieties/${anx_id}/delete-anx`);
                 navigate("/home");
             }
         } catch (error) {
@@ -49,7 +49,7 @@ const ViewProgress: React.FC = () => {
         try {
             const confirmDelete = window.confirm("Are you sure you want to remove this factor?");
             if (confirmDelete) {
-                await axios.delete(`/api/user/${currentUser?.uid}/factors/${factor_id}/delete-factor`);
+                await axios.delete(`/api/${currentUser?.uid}/factors/${factor_id}/delete-factor`);
                 setFactors(factors.filter(factor => factor.factor_id !== factor_id));
             }
         } catch (error) {

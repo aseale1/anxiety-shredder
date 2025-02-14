@@ -26,12 +26,12 @@ const Home = () => {
   const navigate = useNavigate();
 
   const fetchUserData = async (uid: string) => {
-    const response = await axios.get(`/api/user/${uid}`);
+    const response = await axios.get(`/api/${uid}`);
     return response.data;
   };
 
   const fetchUserAnxieties = async (uid: string) => {
-    const response = await axios.get(`/api/user/${uid}/anxieties`);
+    const response = await axios.get(`/api/${uid}/anxieties`);
     return response.data;
   };
 
