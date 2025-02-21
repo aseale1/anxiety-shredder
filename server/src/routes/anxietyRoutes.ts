@@ -117,6 +117,23 @@ const deleteAnxiety: RequestHandler<{ firebase_uid: string, anx_id: string }> = 
     await prisma.user_con_rating.deleteMany({
       where: {
         firebase_uid,
+        con_id: {
+          in: (await prisma.conditions.findMany({
+            where: {
+              factor: {
+                anx_id,
+              },
+              user_con_rating: {
+                some: {
+                  firebase_uid,
+                },
+              },
+            },
+            select: {
+              con_id: true,
+            },
+          })).map(condition => condition.con_id),
+        },
       },
     });
     await prisma.user_anx.delete({
