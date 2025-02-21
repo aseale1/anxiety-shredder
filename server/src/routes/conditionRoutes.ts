@@ -38,7 +38,35 @@ const getConditionsForFactor = async (req: Request, res: Response) => {
       }
     };
 
+// Fetch user's conditions for some factor and the details of that condition
+const getUserConditions: RequestHandler = async (req, res) => {
+    const { firebase_uid, factor_id } = req.params;
+      try {
+        const trackedConditions = await prisma.conditions.findMany({
+          where: { 
+            factor_id: parseInt(factor_id),
+            user_con_rating: {
+              some: {
+                firebase_uid,
+              },
+            },
+          },
+          include: {
+            user_con_rating: {
+              where: {
+                firebase_uid,
+              },
+            },
+          },
+        });
+        res.status(200).json(trackedConditions);
+      } catch (err) {
+        res.status(500).json({ error: "Error fetching conditions" });
+      }
+  };
+
 conditionRouter.get("/factors/:factor_id/conditions", getConditionsForFactor);
 conditionRouter.post("/:firebase_uid/user-condition", addUserCondition);
+conditionRouter.get("/:firebase_uid/factors/:factor_id/conditions", getUserConditions);
 
 export default conditionRouter;

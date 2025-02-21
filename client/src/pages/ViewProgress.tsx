@@ -7,31 +7,51 @@ const ViewProgress: React.FC = () => {
     interface Anxiety {
         anx_name: string;
     }
+    interface Condition {
+        condition_id: number;
+        factor_id: number;
+        condition_name: string;
+        user_con_rating: { firebase_uid: string; con_id: number; rating: number }[];
+    }
+
     const { anx_id } = useParams();
     const navigate = useNavigate();
     const { currentUser } = useAuth();
     const [anxiety, setAnxiety] = useState<Anxiety | null>(null);
-    const [factors, setFactors] = useState<{ factor_id: number; factor_name: string }[]>([]);
+    const [factors, setFactors] = useState<any[]>([]);
+    const [conditions, setConditions] = useState<Condition[]>([]);
     const [editMode, setEditMode] = useState<boolean>(false);
 
-    useEffect (() => {
+    useEffect(() => {
         const fetchAnxietyAndFactors = async () => {
             try {
-                // Fetch anxiety object
-                console.log(`Fetching anxiety ${anxiety?.anx_name} with ID: ${anx_id}`);
-                const anxResponse = await axios.get(`/api/anxieties/${anx_id}`);
-                setAnxiety(anxResponse.data);
+                if (currentUser){
+                    const anxResponse = await axios.get(`/api/anxieties/${anx_id}`);
+                    setAnxiety(anxResponse.data);
 
-                // Fetch user's factors for the selected anxiety
-                const factorResponse = await axios.get(`/api/${currentUser?.uid}/anxieties/${anx_id}/factors`);
-                setFactors(Array.isArray(factorResponse.data) ? factorResponse.data : []);
-                console.log(`Fetched factors for anxiety ${anxiety?.anx_name}:`, factorResponse.data);
-            } catch (error) {  
-                console.error("Error fetching factors for anxiety:", error);
+                    const factorResponse = await axios.get(`/api/${currentUser?.uid}/anxieties/${anx_id}/factors`);
+                    const factorsData = factorResponse.data;
+                    setFactors(factorsData);
+
+                    const conditionsData = await Promise.all(
+                        factorsData.map(async (factor: any) => {
+                            const conditionResponse = await axios.get(`/api/${currentUser?.uid}/factors/${factor.factor_id}/conditions`);
+                            return conditionResponse.data;
+                        })
+                    );
+    
+                    // Flatten the array of conditions arrays
+                    console.log("Conditions data (flattened):", conditionsData.flat());
+                    setConditions(conditionsData.flat());
+                }
+                
+            } catch (error) {
+                console.error("Error fetching anxiety and factors:", error);
             }
         };
         fetchAnxietyAndFactors();
     }, [anx_id, currentUser]);
+
 
     const handleDeleteAnxiety = async () => {
         try {
@@ -59,27 +79,45 @@ const ViewProgress: React.FC = () => {
 
     return (
         <div className="h-screen w-screen bg-amber-50">
-         {anxiety && <h1 className="text-6xl text-center text-black font-blaka">{anxiety.anx_name}</h1>}
-         <button className="absolute top-0 right-0 mt-2 p-2 bg-red-500 text-white" onClick={() => setEditMode(!editMode)}>
-            {editMode ? "Cancel" : "Edit"}
-         </button>
-      {editMode && (
-        <button className="mt-2 p-2 font-lato bg-red-600 text-white" onClick={handleDeleteAnxiety}>Remove Anxiety</button>
-      )}
-      <div className="mt-4" >
-        {factors.map(factor => (
-            <div key={factor.factor_id} className="mb-4">
-            <h2 className="text-xl text-black font-semibold">- {factor.factor_name}</h2>
+            {/* Display Anxiety Name */}
+            {anxiety && ( <h1 className="text-6xl text-center text-black font-blaka">{anxiety.anx_name}</h1> )}
+    
+            {/* Edit Mode Button */}
+            <button className="absolute top-0 right-0 mt-2 p-2 bg-red-500 text-white" onClick={() => setEditMode(!editMode)}>
+                {editMode ? "Cancel" : "Edit"}
+            </button>
+    
+            {/* Delete Anxiety Button */}
             {editMode && (
-                <button className="mt-1 p-2 bg-red-500 text-white" onClick={() => handleDeleteFactor(factor.factor_id)}>
-                Remove Factor
-              </button>
+                <button className="mt-2 p-2 font-lato bg-red-600 text-white" onClick={handleDeleteAnxiety}>
+                    Remove Anxiety
+                </button>
             )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+    
+            {/* Display Factors & Their Conditions */}
+            {factors.map((factor) => (
+                <div key={factor.factor_id} className="flex flex-col mt-4">
+                    <h2 className="text-xl text-black font-semibold">{factor.factor_name}</h2>
+                    {conditions
+                        .filter((condition) => condition.factor_id === factor.factor_id)
+                        .map((condition) => (
+                            <div key={condition.condition_id} className="flex items-center">
+                               <span className="text-lg text-black font-lato">
+                                    - {condition.condition_name}: {condition.user_con_rating.length > 0 ? condition.user_con_rating[0].rating : "No rating"}
+                                </span>
+
+                                {editMode && (
+                                    <button className="ml-2 p-2 font-lato bg-red-600 text-white" onClick={() => handleDeleteFactor(factor.factor_id)}>
+                                        Remove Factor
+                                    </button>
+                                )}
+                            </div>
+                        ))}
+                </div>
+                        ))
+                    }
+        </div>
+    );    
 
 };
 export default ViewProgress;
