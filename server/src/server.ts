@@ -1,9 +1,11 @@
 import express, { Request, Response, RequestHandler } from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import userRouter from './routes/userRoutes';
 import testingRouter from './routes/testingRoutes';
+import userRouter from './routes/userRoutes';
 import anxietyRouter from './routes/anxietyRoutes';
+import factorRouter from './routes/factorRoutes';
+import conditionRouter from './routes/conditionRoutes';
 
 dotenv.config();
 
@@ -20,9 +22,12 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // Routes
-app.use('/api/user/', userRouter);
+app.use('/api', userRouter);
 app.use('/api', testingRouter);
 app.use('/api', anxietyRouter);
+app.use('/api', factorRouter);
+app.use('/api', conditionRouter);
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

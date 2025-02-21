@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 const anxietyRouter = express.Router();
 
 // Fetch all anxieties
-anxietyRouter.get("/anxieties", async (req, res) => {
+const getAllAnxieties: RequestHandler = async (req, res) => {
     try {
       const anxieties = await prisma.anxiety_source.findMany({
         distinct: ['anx_id'],
@@ -19,10 +19,10 @@ anxietyRouter.get("/anxieties", async (req, res) => {
     } catch (err) {
       res.status(500).json({ error: "Error fetching anxieties and factors"})
     }
-  });
+  };
 
 // Fetch specific anxiety
-anxietyRouter.get("/anxieties/:anx_id", async (req, res) => {
+const getAnxiety: RequestHandler<{ anx_id: string }> = async (req, res) => {
   const anx_id = parseInt(req.params.anx_id);
     try {
       const anxiety = await prisma.anxiety_source.findUnique({
@@ -35,23 +35,10 @@ anxietyRouter.get("/anxieties/:anx_id", async (req, res) => {
     } catch (err) {
     res.status(500).json({ error: "Error fetching anxiety"})
     }
-  });
-
-// Fetch all factors for some anxiety
-anxietyRouter.get("/anxieties/:anx_id/factors", async (req, res) => {
-  const anx_id = parseInt(req.params.anx_id);
-    try {
-      const factors = await prisma.factor.findMany({
-        where: { anx_id },
-    });
-    res.status(200).json(factors);
-    } catch (err) {
-    res.status(500).json({ error: "Error fetching factors"})
-    }
-  });
+  };
 
 // Add an anxiety to a user
-  anxietyRouter.post("/user-anxiety", async (req, res) => {
+const addUserAnxiety: RequestHandler = async (req, res) => {
     const { firebase_uid, anx_id } = req.body;
       try {
         const newAnxiety = await prisma.user_anx.create({
@@ -64,26 +51,36 @@ anxietyRouter.get("/anxieties/:anx_id/factors", async (req, res) => {
       } catch (err) {
         res.status(500).json({ error: "Error adding anxiety to user" });
       }
-    });
+    };
 
-// Add a factor to a user
- anxietyRouter.post("/user-factor", async (req, res) => {
-  const { firebase_uid, factor_id } = req.body;
-    try {
-      const newFactor = await prisma.user_factor.create({
-        data: {
-        firebase_uid,
-        factor_id,
-        },
-      });
-        res.status(201).json(newFactor);
-        } catch (err) {
-        res.status(500).json({ error: "Error adding factor to user" });
+    // Fetch anxieties for some user
+    const getUserAnxieties: RequestHandler<{ firebase_uid: string }> = async (req, res) => {
+      const { firebase_uid } = req.params;
+      //console.log("getUserAnxietiesHandler activated");
+  
+      try {
+        const anxieties = await prisma.user_anx.findMany({
+          where: { firebase_uid },
+          include: {
+            anxiety_source: true,
+          },
+        });
+        //console.log("Number of anxieties", anxieties.length);
+  
+        if (anxieties.length > 0) {
+          res.json(anxieties);
+        } else {
+          res.status(404).json({ error: 'No anxieties found for the user' });
         }
-    });
+      } catch (error) {
+        console.error("Error fetching user anxieties:", error);
+        res.status(500).json({ error: 'Failed to fetch anxieties' });
+      }
+    };
+  
 
-    // Fetch a user's untracked anxieties
-    anxietyRouter.get("/user/:firebase_uid/anxieties/untracked-anxieties", async (req, res) => {
+    // Fetch untracked anxieties for some user
+    const getUntrackedAnxieties: RequestHandler<{ firebase_uid: string }> = async (req, res) => {
       const { firebase_uid } = req.params;
       try {
         const untrackedAnxieties = await prisma.anxiety_source.findMany({
@@ -101,20 +98,48 @@ anxietyRouter.get("/anxieties/:anx_id/factors", async (req, res) => {
       } catch (err) {
         res.status(500).json({ error: "Error fetching untracked anxieties" });
       }
-    });
+    };
 
-    // Fetch conditions for some factor
-    anxietyRouter.get("/factors/:factor_id/conditions", async (req, res) => {
-      const factor_id = parseInt(req.params.factor_id);
-      try {
-        const conditions = await prisma.conditions.findMany({
-          where: { factor_id },
-        });
-        res.status(200).json(conditions);
-      } catch (err) {
-        res.status(500).json({ error: "Error fetching conditions" });
-      }
+// Delete an anxiety from a user as well as the factors and conditions associated with it
+const deleteAnxiety: RequestHandler<{ firebase_uid: string, anx_id: string }> = async (req, res) => {
+  const { firebase_uid } = req.params;
+  const anx_id = parseInt(req.params.anx_id, 10);
+
+  try {
+    await prisma.user_factor.deleteMany({
+      where: {
+        firebase_uid,
+        factor: {
+          anx_id,
+        },
+      },
     });
+    await prisma.user_con_rating.deleteMany({
+      where: {
+        firebase_uid,
+      },
+    });
+    await prisma.user_anx.delete({
+      where: {
+        firebase_uid_anx_id: {
+          firebase_uid,
+          anx_id,
+        },
+      },
+    });
+    res.status(200).json({ message: "Anxiety deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "Error deleting anxiety" });
+  }
+};
+
+
+anxietyRouter.get("/anxieties", getAllAnxieties);
+anxietyRouter.get("/anxieties/:anx_id", getAnxiety);
+anxietyRouter.post("/user-anxiety", addUserAnxiety);
+anxietyRouter.get('/:firebase_uid/anxieties', getUserAnxieties);
+anxietyRouter.get("/user/:firebase_uid/anxieties/untracked-anxieties", getUntrackedAnxieties);
+anxietyRouter.delete("/:firebase_uid/anxieties/:anx_id/delete-anx", deleteAnxiety);
 
       
 export default anxietyRouter;
