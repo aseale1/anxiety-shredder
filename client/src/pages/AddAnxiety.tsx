@@ -17,7 +17,7 @@ const AddAnxiety: React.FC = () => {
     const [anxieties, setAnxieties] = useState<{ anx_id: number; anx_name: string }[]>([]);
     const [selectedAnxieties, setSelectedAnxieties] = useState<number | null>(null);
     const [factors, setFactors] = useState<{ factor_id: number; factor_name: string }[]>([]);
-    const [selectedFactors, setSelectedFactors] = useState<number[]>([]);
+    const [selectedFactors, setSelectedFactors] = useState<{ factor_id: number; factor_name: string }[]>([]);
     const [conditions, setConditions] = useState<Condition[]>([]);
     const [rankings, setRankings] = useState<{ condition_id: number; rating: number }[]>([]);  
     const [selectedFactorName, setSelectedFactorName] = useState<string | null>(null);
@@ -94,7 +94,9 @@ const AddAnxiety: React.FC = () => {
             // Add anxiety to user
             await axios.post(`/api/user-anxiety`, { firebase_uid: currentUser.uid, anx_id: selectedAnxieties });
             // Add factors to user
-            await axios.post(`/api/user-factor`, { firebase_uid: currentUser.uid, factor_id: selectedFactors });
+            for (const factor of selectedFactors) {
+            await axios.post(`/api/user-factor`, { firebase_uid: currentUser.uid, factor_id: factor.factor_id });
+            }
             // Add conditions to user
             await axios.post(`/api/${currentUser.uid}/user-condition`, { firebase_uid: currentUser.uid, conditions: rankings });
         } catch (error) {

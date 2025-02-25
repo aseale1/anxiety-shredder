@@ -29,6 +29,7 @@ const addUserFactor: RequestHandler = async (req, res) => {
         });
           res.status(201).json(newFactor);
           } catch (err) {
+          console.error("Error adding factor to user:", err);
           res.status(500).json({ error: "Error adding factor to user" });
           }
       };
