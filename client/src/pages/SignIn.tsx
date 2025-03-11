@@ -48,6 +48,7 @@ return (
 
         {/* Sign Up Section */}
         <div className="text-lg text-black font-lato mt-6 mb-4">FIRST TIME HERE?</div>
+        <button onClick={() => navigate('/sign-up')} className="w-full p-2 rounded-full bg-[#7f85a1] text-black font-lato">Sign Up</button>
       </div>
     </div>
   </div>

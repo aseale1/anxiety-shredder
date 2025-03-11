@@ -22,8 +22,10 @@ const getConditionsForFactor = async (req: Request, res: Response) => {
   const addUserCondition: RequestHandler = async (req, res) => {
     const { firebase_uid, conditions } = req.body;
       try {
+        console.log('Adding conditions to user:', conditions);
         const newCondition = await prisma.$transaction(
           conditions.map((condition: any) => {
+            console.log('Creating condition:', condition);
             return prisma.user_con_rating.create({
               data: {
                 firebase_uid,
@@ -33,8 +35,10 @@ const getConditionsForFactor = async (req: Request, res: Response) => {
             })
           })
         )
+        console.log('Conditions added successfully:', newCondition);
         res.status(201).json(newCondition);
       } catch (err) {
+        console.error('Error adding conditions:', err);
         res.status(500).json({ error: "Error adding condition to user" });
       }
     };
