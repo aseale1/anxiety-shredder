@@ -78,6 +78,7 @@ const deleteFactor: RequestHandler<{ firebase_uid: string, factor_id: string }> 
       });
       res.status(200).json({ message: "Factor deleted successfully" });
     } catch (err) {
+      console.error(err);
       res.status(500).json({ error: "Error deleting factor" });
     }
   };
@@ -86,7 +87,5 @@ factorRouter.get("/anxieties/:anx_id/factors", getFactorsForAnx);
 factorRouter.post("/user-factor", addUserFactor);
 factorRouter.get("/:firebase_uid/anxieties/:anx_id/factors", getUserFactors);
 factorRouter.delete("/:firebase_uid/factors/:factor_id/delete-factor", deleteFactor);
-
-
 
 export default factorRouter;
