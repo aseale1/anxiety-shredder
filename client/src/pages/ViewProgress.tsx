@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
-import { useParams,useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
+
+const CHALLENGE_LEVELS = ["Green", "Blue", "Black", "DoubleBlack"];
 
 const ViewProgress: React.FC = () => {
     interface Anxiety {
@@ -21,6 +23,10 @@ const ViewProgress: React.FC = () => {
     const [factors, setFactors] = useState<any[]>([]);
     const [conditions, setConditions] = useState<Condition[]>([]);
     const [editMode, setEditMode] = useState<boolean>(false);
+    const [challenge, setChallenge] = useState<string | null>(null);
+    const [detailsVisible, setDetailsVisible] = useState<boolean>(false);
+    const [challengeDescription, setChallengeDescription] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchAnxietyAndFactors = async () => {
@@ -52,7 +58,6 @@ const ViewProgress: React.FC = () => {
         fetchAnxietyAndFactors();
     }, [anx_id, currentUser]);
 
-
     const handleDeleteAnxiety = async () => {
         try {
             const confirmDelete = window.confirm("Are you sure you want to remove this anxiety?");
@@ -77,6 +82,33 @@ const ViewProgress: React.FC = () => {
         }
     };
 
+    const handleGenerateChallenge = async (chall_level: string) => {
+        console.log('Generating challenge with params:', {
+            firebase_uid: currentUser?.uid,
+            anx_id: anx_id,
+            chall_level,
+        });
+        try {
+            const response = await axios.post(`/api/generate-challenge`, {
+                firebase_uid: currentUser?.uid,
+                anx_id: anx_id,
+                chall_level
+            });
+            console.log('Generated challenge response:', response.data); 
+            setChallengeDescription(`To complete a ${chall_level.toUpperCase()} challenge, try these conditions: ${response.data.description}`);
+            setError(null);
+        } catch (error: any) {
+            console.error('Error generating challenge:', error);
+        if (error.response && error.response.status === 500) {
+                console.log('Error response:', error.response.data.error);
+                setError(error.response.data.error);
+            } else {
+                setError("Error generating challenge. Please try again.");
+            }
+            setChallengeDescription(null);
+    }
+};
+
     return (
         <div className="h-screen w-screen bg-amber-50">
             {/* Display Anxiety Name */}
@@ -93,9 +125,14 @@ const ViewProgress: React.FC = () => {
                     Remove Anxiety
                 </button>
             )}
+
+            {/* View Details Button */}
+            <button className="mt-2 p-2 font-lato bg-blue-600 text-white" onClick={() => setDetailsVisible(!detailsVisible)}>
+                {detailsVisible ? "Hide Details" : "View Details"}
+            </button>
     
             {/* Display Factors & Their Conditions */}
-            {factors.map((factor) => (
+            {detailsVisible && factors.map((factor) => (
                 <div key={factor.factor_id} className="flex flex-col mt-4">
                     <h2 className="text-xl text-black font-semibold">{factor.factor_name}</h2>
                     {conditions
@@ -114,10 +151,31 @@ const ViewProgress: React.FC = () => {
                             </div>
                         ))}
                 </div>
-                        ))
-                    }
+            ))}
+
+            {/* Challenge Buttons */}
+            <div className="mt-4">
+                {CHALLENGE_LEVELS.map(level => (
+                    <button key={level} className="m-2 p-2 font-lato bg-green-600 text-white" onClick={() => handleGenerateChallenge(level)}>
+                        {level}
+                    </button>
+                ))}
+            </div>
+
+            {/* Challenge Description */}
+            {challengeDescription && (
+                <p className="mt-4 text-lg text-black">{challengeDescription}</p>
+            )}
+
+            {/* Error Message */}
+            {error && (
+                <p className="mt-4 text-lg text-red-600">{error}</p>
+            )}
+            {/* Return Home */}
+            <button onClick={() => navigate("/home")} className="p-2 mt-4 ml-4 bg-black text-white font-lato">Return to Home</button>
+
         </div>
     );    
-
 };
+
 export default ViewProgress;

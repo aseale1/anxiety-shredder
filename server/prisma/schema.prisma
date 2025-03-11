@@ -30,6 +30,7 @@ model challenges {
   anx_id           Int?
   chall_level      String?            @db.VarChar(255)
   completed        Boolean?           @default(false)
+  description      String?            @db.VarChar
   chall_conditions chall_conditions[]
   anxiety_source   anxiety_source?    @relation(fields: [anx_id], references: [anx_id], onDelete: Cascade, onUpdate: NoAction)
   users            users?             @relation(fields: [firebase_uid], references: [firebase_uid], onDelete: Cascade, onUpdate: NoAction)

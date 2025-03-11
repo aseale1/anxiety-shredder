@@ -6,6 +6,7 @@ import userRouter from './routes/userRoutes';
 import anxietyRouter from './routes/anxietyRoutes';
 import factorRouter from './routes/factorRoutes';
 import conditionRouter from './routes/conditionRoutes';
+import challengeRouter from './routes/challengeRoutes';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use('/api', testingRouter);
 app.use('/api', anxietyRouter);
 app.use('/api', factorRouter);
 app.use('/api', conditionRouter);
+app.use('/api', challengeRouter);
 
 
 app.listen(PORT, () => {
