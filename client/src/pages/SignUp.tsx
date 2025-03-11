@@ -50,33 +50,37 @@ return (
           <div className="text-lg text-black text-2xl font-lato mb-1">FIRST NAME</div>
           <input
             type="text"
+            placeholder='Name'
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            className="w-full p-2 mb-4 border border-gray-400 rounded-md"
+            className="w-full p-2 mb-3 rounded-md border border-gray-300 bg-[#c4c6cf] focus:outline-none"
           />
 
           <div className="text-lg text-black text-2xl font-lato mb-1">EMAIL ADDRESS</div>
           <input
             type="email"
+            placeholder='example@email.com'
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full p-2 mb-4 border border-gray-400 rounded-md"
+            className="w-full p-2 mb-3 rounded-md border border-gray-300 bg-[#c4c6cf] focus:outline-none"
           />
 
           <div className="text-lg text-black text-2xl font-lato mb-1">PASSWORD</div>
           <input
             type="password"
+            placeholder='Create password'
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full p-2 mb-4 border border-gray-400 rounded-md"
+            className="w-full p-2 mb-3 rounded-md border border-gray-300 bg-[#c4c6cf] focus:outline-none"
           />
 
           <div className="text-lg text-black text-2xl font-lato mb-1">CONFIRM PASSWORD</div>
           <input
             type="password"
             value={confirmPassword}
+            placeholder='Re-enter password'
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full p-2 mb-4 border border-gray-400 rounded-md"
+            className="w-full p-2 mb-3 rounded-md border border-gray-300 bg-[#c4c6cf] focus:outline-none"
           />
 
           {error && <div className="text-red-500 mb-4">{error}</div>}
@@ -87,7 +91,7 @@ return (
 
           <button
             type="submit"
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md"
+            className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md"
             disabled={password !== confirmPassword}
           >
             Sign Up
