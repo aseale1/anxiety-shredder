@@ -51,35 +51,95 @@ const AddAnxiety: React.FC = () => {
     }
 
     // Function to handle factor selection and fetch conditions
-    const handleFactorSelect = (factor: any, anxiety: any) => {
-        setSelectedFactors((prevFactors) => [...prevFactors, factor]);
-        setSelectedFactorName((prevFactorName) => `${prevFactorName}, ${factor.factor_name}`);
+    const handleFactorSelect = (factor: any) => {
+        // Check if this factor is already selected
+        const isAlreadySelected = selectedFactors.some(f => f.factor_id === factor.factor_id);
+        
+        if (isAlreadySelected) {
+        // Remove factor if already selected
+        setSelectedFactors(selectedFactors.filter(f => f.factor_id !== factor.factor_id));
+        // Remove conditions for this factor
+        setConditions(conditions.filter(c => c.factor_id !== factor.factor_id));
+        // Remove rankings for conditions of this factor
+        setRankings(rankings.filter(r => {
+            const conditionBelongsToFactor = conditions.some(
+            c => c.condition_id === r.condition_id && c.factor_id === factor.factor_id
+            );
+            return !conditionBelongsToFactor;
+        }));
+        
+        // Update selected factor name
+        const newFactorNames = selectedFactors
+            .filter(f => f.factor_id !== factor.factor_id)
+            .map(f => f.factor_name)
+            .join(", ");
+        setSelectedFactorName(newFactorNames || null);
+        } else {
+        // Add factor if not already selected
+        setSelectedFactors([...selectedFactors, factor]);
+        
+        // Update selected factor name
+        const newFactorName = selectedFactorName 
+            ? `${selectedFactorName}, ${factor.factor_name}` 
+            : factor.factor_name;
+        setSelectedFactorName(newFactorName);
+        
         if (!currentUser) {
-          console.error("User is not authenticated");
-          return;
+            console.error("User is not authenticated");
+            return;
         }
+        
         axios.get(`/api/factors/${factor.factor_id}/conditions`).then((response) => {
-          console.log(`Fetched conditions for factor ${factor.factor_id} (${factor.factor_name}):`, response.data);
-          setConditions((prevConditions) => [...prevConditions, ...response.data]);
-          console.log("Conditions after fetching:", response.data);
+            console.log(`Fetched conditions for factor ${factor.factor_id} (${factor.factor_name}):`, response.data);
+            
+            // Log the first condition to check its structure
+            if (response.data.length > 0) {
+            console.log("First condition object:", response.data[0]);
+            console.log("condition_id present?", response.data[0].condition_id !== undefined);
+            }
+            
+            // Make sure each condition has the necessary fields, including factor_id
+            const conditionsWithFactorId = response.data.map((condition: any) => {
+            // Log individual condition to check structure
+            console.log("Processing condition:", condition);
+            
+            return {
+                ...condition,
+                factor_id: factor.factor_id,
+                // Ensure condition_id is present
+                condition_id: condition.condition_id || condition.con_id || null
+            };
+            });
+            
+            setConditions((prevConditions) => [...prevConditions, ...conditionsWithFactorId]);
+            console.log("Conditions after processing:", conditionsWithFactorId);
         }).catch((error) => {
-          console.error("Error fetching conditions:", error);
+            console.error("Error fetching conditions:", error);
         });
-      }
-
-      const handleRankingChange = (factor_id: number, condition_name: string, condition_id: number, rating: number) => {
+        }
+    }
+    
+    // Now fix the handleRankingChange function to handle the case where condition_id might be missing
+    const handleRankingChange = (condition_id: number | null, factor_id: number, condition_name: string, rating: number) => {
+        console.log('condition_id when handleRankingChange:', condition_id);
         console.log(`Rating for condition ${condition_name} changed to ${rating}`);
+        
+        if (condition_id === null || condition_id === undefined) {
+        console.error("condition_id is null or undefined for condition:", condition_name);
+        return;
+        }
+        
         setRankings((prevRankings) => {
-          const newRankings = [...prevRankings];
-          const existingRanking = newRankings.find((r) => r.condition_id === condition_id);
-          if (existingRanking) {
-            existingRanking.rating = rating;
-          } else {
+        const newRankings = [...prevRankings];
+        const existingRankingIndex = newRankings.findIndex((r) => r.condition_id === condition_id);
+        if (existingRankingIndex !== -1) {
+            newRankings[existingRankingIndex].rating = rating;
+        } else {
             newRankings.push({ condition_id, rating });
-          }
-          return newRankings;
+        }
+        return newRankings;
         });
-      }
+    }
 
     const handleSubmit = async () => {
         if (!currentUser) {
@@ -93,14 +153,24 @@ const AddAnxiety: React.FC = () => {
         try {
             // Add anxiety to user
             await axios.post(`/api/user-anxiety`, { firebase_uid: currentUser.uid, anx_id: selectedAnxieties });
+    
             // Add factors to user
             for (const factor of selectedFactors) {
-            await axios.post(`/api/user-factor`, { firebase_uid: currentUser.uid, factor_id: factor.factor_id });
+                try {
+                    await axios.post(`/api/user-factor`, { firebase_uid: currentUser.uid, factor_id: factor.factor_id });
+                } catch (error) {
+                    console.error(`Error adding factor ${factor.factor_id}:`, error);
+                }
             }
+    
             // Add conditions to user
-            await axios.post(`/api/${currentUser.uid}/user-condition`, { firebase_uid: currentUser.uid, conditions: rankings });
+            try {
+                await axios.post(`/api/${currentUser.uid}/user-condition`, { firebase_uid: currentUser.uid, conditions: rankings });
+            } catch (error) {
+                console.error(`Error adding conditions:`, error);
+            }
         } catch (error) {
-            console.error("Error adding anxiety, factors, and conditions:", error);
+            console.error(`Error submitting form:`, error);
         }
     }
 
@@ -131,7 +201,7 @@ const AddAnxiety: React.FC = () => {
                         <label key={factor.factor_id} className="block text-black font-lato">
                             <input
                                 type="checkbox"
-                                onChange={() => handleFactorSelect(factor, selectedAnxieties)}
+                                onChange={() => handleFactorSelect(factor)}
                             />
                             {factor.factor_name}
                         </label>
@@ -139,13 +209,13 @@ const AddAnxiety: React.FC = () => {
                 </div>
             )}
 
-            {/* Display conditions for selected factors with a dropdown for ranking */}
+            {/* Display conditions for selected factors */}
             {selectedFactorName && conditions && conditions.length > 0 && (
             <div>
             <h2 className="text-xl text-black font-semibold mb-2">When it comes to these factors, how anxious do these conditions make you feel?</h2>
             <p className="italic text-black mb-2">0-not anxious at all, 1-somewhat anxious, 2-very anxious, 3-extremely anxious</p>
-            {conditions.map((condition) => (
-            <div key={condition.condition_id} className="mb-4">
+            {conditions.map((condition, index) => (
+            <div key={`${condition.condition_id}-${index}`} className="mb-4">
                 <label
                 className="block text-black font-lato"
                 >
@@ -154,9 +224,15 @@ const AddAnxiety: React.FC = () => {
                 {[0, 1, 2, 3].map((rating) => (
                 <label key={rating} className="inline-block mr-4 text-black">
                     <input
-                    type="checkbox"
+                    type="radio"
+                    name={`rating-${condition.condition_id}`}
                     checked={rankings.find((r) => r.condition_id === condition.condition_id)?.rating === rating}
-                    onChange={() => handleRankingChange(condition.factor_id, condition.condition_name, condition.condition_id, rating)}
+                    onChange={() => handleRankingChange(
+                        condition.condition_id, 
+                        condition.factor_id, 
+                        condition.condition_name, 
+                        rating
+                    )}
                     />
                     {rating}
                 </label>
