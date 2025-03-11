@@ -28,13 +28,30 @@ const getUserInfo: RequestHandler<UserRequestParams> = async (req, res) => {
   }
 };
 
-// TODO: Create user
+// Create new user
+const createUser: RequestHandler = async (req, res) => {
+  try {
+    const { firebase_uid, email, first_name } = req.body;
+    const user = await prisma.users.create({
+      data: {
+        firebase_uid,
+        email,
+        first_name,
+      },
+    });
+    res.json(user);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error creating user' });
+  }
+};
 
 // TODO: Update user information
 
 // TODO: Delete user
 
 userRouter.get('/:firebase_uid', getUserInfo);
+userRouter.post('/new-user', createUser);
 
 export default userRouter;
 
