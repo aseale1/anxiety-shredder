@@ -129,6 +129,7 @@ const deleteAnxiety: RequestHandler<{ firebase_uid: string, anx_id: string }> = 
     });
     res.status(200).json({ message: "Anxiety deleted successfully" });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Error deleting anxiety" });
   }
 };

@@ -97,12 +97,17 @@ const ViewProgress: React.FC = () => {
             console.log('Generated challenge response:', response.data); 
             setChallengeDescription(`To complete a ${chall_level.toUpperCase()} challenge, try these conditions: ${response.data.description}`);
             setError(null);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error generating challenge:', error);
-            setError("Error generating challenge. Please try again.");
+        if (error.response && error.response.status === 500) {
+                console.log('Error response:', error.response.data.error);
+                setError(error.response.data.error);
+            } else {
+                setError("Error generating challenge. Please try again.");
+            }
             setChallengeDescription(null);
-        }
-    };
+    }
+};
 
     return (
         <div className="h-screen w-screen bg-amber-50">

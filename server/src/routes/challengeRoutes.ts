@@ -48,7 +48,8 @@ const generateChallenge: RequestHandler = async (req, res) => {
             if (needed > 0) {
                 const available = conditionsByRating[rating] || [];
                 if (available.length < needed) {
-                  throw new Error(`Not enough conditions with rating ${rating}`);
+                return res.status(400).json({ error: `Not enough conditions with rating ${rating} to generate challenge` });
+                //throw new Error(`Not enough conditions with rating ${rating}`);
                 }
                 selectedConditions.push(...available.slice(0, needed));
             }
@@ -60,7 +61,7 @@ const generateChallenge: RequestHandler = async (req, res) => {
 
         // Create the challenge description
         const challengeDescription = selectedConditions.map(cond => cond.condition_name).join(', ');
-        res.status(200).json({ description: challengeDescription });
+        console.log('Challenge description:', challengeDescription);
 
         // Create the challenge
         const challenge = await prisma.challenges.create({
@@ -80,6 +81,7 @@ const generateChallenge: RequestHandler = async (req, res) => {
 
         res.status(201).json(challenge);
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: "Error generating challenge" });
     }
 };
