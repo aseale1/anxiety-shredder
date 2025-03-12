@@ -13,6 +13,7 @@ const CHALLENGE_RULES = {
   };
 
 // Generate a challenge based on condition ratings
+// Generate a challenge based on condition ratings
 const generateChallenge: RequestHandler = async (req, res) => {
     const { firebase_uid, anx_id, chall_level }: { firebase_uid: string; anx_id: string; chall_level: keyof typeof CHALLENGE_RULES } = req.body;
     try {
@@ -31,13 +32,18 @@ const generateChallenge: RequestHandler = async (req, res) => {
         console.log('Conditions:', conditions);
 
         // Categorize conditions based on their ratings
-        const conditionsByRating: Record<number, { con_id: string, condition_name: string }[]> = { 1: [], 2: [], 3: [] };
+        const conditionsByRating: Record<number, { con_id: string, condition_name: string }[]> = {};
         conditions.forEach((condition) => {
             if (condition.rating !== null) {
-                conditionsByRating[condition.rating].push({ con_id: condition.con_id.toString(), condition_name: condition.conditions.condition_name });
+                const rating = condition.rating;
+                if (!conditionsByRating[rating]) {
+                    conditionsByRating[rating] = []; 
+                }
+                conditionsByRating[rating].push({ con_id: condition.con_id.toString(), condition_name: condition.conditions.condition_name });
             }
         });
         console.log('Conditions by rating:', conditionsByRating);
+
 
         // Select conditions based on challenge rules
         const requiredConditions = CHALLENGE_RULES[chall_level];
