@@ -23,12 +23,12 @@ return (
     <div className="bg-amber-50 w-3/4 md:w-2/3 lg:w-1/2 p-8 rounded-md shadow-lg">
       <div className="text-center">
         {/* Header */}
-        <div className="font-blaka text-black text-6xl mb-8">ANXIETY SHREDDER</div>
-        <div className="font-normal italic text-black text-2xl mb-8">conquer your mountain</div>
+        <div className="font-fast text-black text-6xl mb-8">ANXIETY SHREDDER</div>
+        <div className="font-afacad italic text-black text-3xl mb-8">conquer your mountain</div>
 
         {/* Sign In Section */}
         <form onSubmit={handleSubmit}>
-          <div className="text-lg text-black text-2xl font-lato mb-1">SIGN IN</div>
+          <div className="text-lg text-black font-afacad mb-1">SIGN IN</div>
           <input
             type="email"
             value={email}
@@ -43,12 +43,12 @@ return (
             placeholder="Password"
             className="w-full p-2 mb-3 rounded-md border border-gray-300 bg-[#c4c6cf] focus:outline-none"
           />
-          <button type="submit" className="w-full p-2 mt-2 rounded-full bg-[#7f85a1] text-black font-lato">Sign In</button>
+          <button type="submit" className="w-full p-2 mt-2 rounded-full bg-[#7f85a1] text-black font-afacad text-xl">Sign In</button>
         </form>
 
         {/* Sign Up Section */}
-        <div className="text-lg text-black font-lato mt-6 mb-4">FIRST TIME HERE?</div>
-        <button onClick={() => navigate('/sign-up')} className="w-full p-2 rounded-full bg-[#7f85a1] text-black font-lato">Sign Up</button>
+        <div className="text-lg text-black font-afacad mt-6 mb-4">FIRST TIME HERE?</div>
+        <button onClick={() => navigate('/sign-up')} className="w-full p-2 rounded-full bg-[#7f85a1] text-black font-afacad text-xl">Sign Up</button>
       </div>
     </div>
   </div>

@@ -119,7 +119,6 @@ const AddAnxiety: React.FC = () => {
         }
     }
     
-    // Now fix the handleRankingChange function to handle the case where condition_id might be missing
     const handleRankingChange = (condition_id: number | null, factor_id: number, condition_name: string, rating: number) => {
         console.log('condition_id when handleRankingChange:', condition_id);
         console.log(`Rating for condition ${condition_name} changed to ${rating}`);
@@ -176,13 +175,13 @@ const AddAnxiety: React.FC = () => {
 
 
     return (
-        <div className="min-h-screen w-screen bg-amber-50 p-4">
-            <h1 className="text-6xl text-black text-center font-blaka mb-4">Add an Anxiety Source</h1>
+        <div className="min-h-screen w-screen bg-amber-50 p-4 text-center">
+            <h1 className="text-6xl text-black text-center font-fast mb-4">Add an Anxiety Source</h1>
 
             {/* Display untracked anxieties */}
-            <h2 className="text-xl text-black font-semibold mb-2">What is making you feel anxious?</h2>
+            <h2 className="text-2xl text-black font-afacad font-semibold">What is making you feel anxious?</h2>
             {anxieties.map((anxiety) => (
-                <label key={anxiety.anx_id} className="block text-black font-lato">
+                <label key={anxiety.anx_id} className="block text-black text-lg font-afacad">
                     <input
                         type="radio"
                         name="anxieties"
@@ -196,9 +195,9 @@ const AddAnxiety: React.FC = () => {
             {/* Display factors for selected anxiety */}
             {selectedAnxieties && (
                 <div>
-                    <h2 className="flex text-xl text-black font-semibold mb-2">What about {anxieties.find((a) => a.anx_id === selectedAnxieties)?.anx_name} causes anxiety?</h2>
+                    <h2 className="text-2xl text-black font-semibold font-afacad mt-4">What about {anxieties.find((a) => a.anx_id === selectedAnxieties)?.anx_name} causes anxiety?</h2>
                     {factors.map((factor) => (
-                        <label key={factor.factor_id} className="block text-black font-lato">
+                        <label key={factor.factor_id} className="block text-black text-lg font-afacad">
                             <input
                                 type="checkbox"
                                 onChange={() => handleFactorSelect(factor)}
@@ -212,17 +211,17 @@ const AddAnxiety: React.FC = () => {
             {/* Display conditions for selected factors */}
             {selectedFactorName && conditions && conditions.length > 0 && (
             <div>
-            <h2 className="text-xl text-black font-semibold mb-2">When it comes to these factors, how anxious do these conditions make you feel?</h2>
-            <p className="italic text-black mb-2">0-not anxious at all, 1-somewhat anxious, 2-very anxious, 3-extremely anxious</p>
+            <h2 className="text-2xl text-black font-afacad font-semibold mb-2 mt-4">When it comes to these factors, how anxious do these conditions make you feel?</h2>
+            <p className="italic text-black text-lg font-afacad mb-2">0-not anxious at all, 1-somewhat anxious, 2-very anxious, 3-extremely anxious</p>
             {conditions.map((condition, index) => (
             <div key={`${condition.condition_id}-${index}`} className="mb-4">
                 <label
-                className="block text-black font-lato"
+                className="block text-black font-afacad"
                 >
                 {condition.condition_name}
                 </label>
                 {[0, 1, 2, 3].map((rating) => (
-                <label key={rating} className="inline-block mr-4 text-black">
+                <label key={rating} className="inline-block mr-4 text-black font-afacad text-lg">
                     <input
                     type="radio"
                     name={`rating-${condition.condition_id}`}
@@ -243,9 +242,9 @@ const AddAnxiety: React.FC = () => {
         )}
 
             {/* Submit */}
-            <button onClick={handleSubmit} className="p-2 mt-4 bg-black text-white font-lato">Submit</button>
+            <button onClick={handleSubmit} className="p-2 mt-4 bg-black text-white font-afacad">Submit</button>
             {/* Return Home */}
-            <button onClick={() => navigate("/home")} className="p-2 mt-4 ml-4 bg-black text-white font-lato">Return to Home</button>
+            <button onClick={() => navigate("/home")} className="p-2 mt-4 ml-4 bg-black text-white font-afacad">Return to Home</button>
 
         </div>
 

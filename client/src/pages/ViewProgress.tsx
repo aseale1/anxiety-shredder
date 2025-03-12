@@ -112,7 +112,7 @@ const ViewProgress: React.FC = () => {
     return (
         <div className="h-screen w-screen bg-amber-50">
             {/* Display Anxiety Name */}
-            {anxiety && ( <h1 className="text-6xl text-center text-black font-blaka">{anxiety.anx_name}</h1> )}
+            {anxiety && ( <h1 className="text-6xl text-center text-black font-fast">{anxiety.anx_name}</h1> )}
     
             {/* Edit Mode Button */}
             <button className="absolute top-0 right-0 mt-2 p-2 bg-red-400 text-white" onClick={() => setEditMode(!editMode)}>
@@ -121,13 +121,13 @@ const ViewProgress: React.FC = () => {
     
             {/* Delete Anxiety Button */}
             {editMode && (
-                <button className="mt-2 p-2 font-lato bg-red-600 text-white" onClick={handleDeleteAnxiety}>
+                <button className="mt-2 p-2 font-afacad bg-red-600 text-white" onClick={handleDeleteAnxiety}>
                     Remove Anxiety
                 </button>
             )}
 
             {/* View Details Button */}
-            <button className="mt-2 p-2 font-lato bg-[#7f85a1] text-white" onClick={() => setDetailsVisible(!detailsVisible)}>
+            <button className="mt-2 p-2 font-afacad bg-[#7f85a1] text-white" onClick={() => setDetailsVisible(!detailsVisible)}>
                 {detailsVisible ? "Hide Details" : "View Details"}
             </button>
     
@@ -139,12 +139,12 @@ const ViewProgress: React.FC = () => {
                         .filter((condition) => condition.factor_id === factor.factor_id)
                         .map((condition) => (
                             <div key={condition.condition_id} className="flex items-center">
-                               <span className="text-lg text-black font-lato">
+                               <span className="text-lg text-black font-afacad">
                                     - {condition.condition_name}: {condition.user_con_rating.length > 0 ? condition.user_con_rating[0].rating : "No rating"}
                                 </span>
 
                                 {editMode && (
-                                    <button className="ml-2 p-2 font-lato bg-red-450 text-white" onClick={() => handleDeleteFactor(factor.factor_id)}>
+                                    <button className="ml-2 p-2 font-afacad bg-red-450 text-white" onClick={() => handleDeleteFactor(factor.factor_id)}>
                                         Remove Factor
                                     </button>
                                 )}
@@ -192,7 +192,7 @@ const ViewProgress: React.FC = () => {
                 <p className="mt-4 text-lg text-red-600">{error}</p>
             )}
             {/* Return Home */}
-            <button onClick={() => navigate("/home")} className="mt-2 p-2 font-lato bg-[#7f85a1] text-white">Return to Home</button>
+            <button onClick={() => navigate("/home")} className="mt-2 p-2 font-afacad bg-[#7f85a1] text-white">Return to Home</button>
 
         </div>
     );    

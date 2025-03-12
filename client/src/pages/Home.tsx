@@ -59,37 +59,39 @@ const Home = () => {
   }, [currentUser]);
 
 
-  if (loading) return <p className='h-screen w-screen bg-amber-50 text-center text-2xl text-black font-blaka'>Loading...</p>;
+  if (loading) return <p className='h-screen w-screen bg-amber-50 text-center text-2xl text-black font-fast'>Loading...</p>;
 
   return (
     <div className="h-screen w-screen bg-amber-50">
-      <h1 className="text-center text-black font-blaka">
+      <h1 className="text-center text-black font-fast">
         Welcome, {userData?.first_name || 'Loading...'}
       </h1>
       {loading ? (
-        <p className="text-center text-black font-lato">Loading...</p>
+        <p className="text-center text-black font-afacad">Loading...</p>
       ) : userData ? (
         <div className="text-center">
-          <p className="text-black font-lato">Email: {userData.email}</p>
-          <p className="text-black font-lato">Name: {userData.first_name}</p>
+          {/*
+          <p className="text-black font-afacad">Email: {userData.email}</p>
+          <p className="text-black font-afacad">Name: {userData.first_name}</p>
+          */}
   
-          <h2 className="mt-4 text-lg font-semibold text-black">You are working on:</h2>
+          <h2 className="mt-4 text-2xl font-semibold font-afacad text-black">You are working on:</h2>
           {Array.isArray(anxieties) && anxieties.length > 0 ? (
             <ul className="mt-2 space-y-2">
               {anxieties.map((anx) => (
-                <li key={anx.anx_id} className="text-black font-lato">
+                <li key={anx.anx_id} className="text-black text-lg font-afacad">
                 {/* Navigate to ViewProgress based on selected anxiety */}
-                  <button onClick={() => navigate("/view-progress/" + anx.anx_id)} className="p-2 rounded-full bg-[#7f85a1] text-black font-lato"> {anx.anxiety_source.anx_name} </button>
+                  <button onClick={() => navigate("/view-progress/" + anx.anx_id)} className="p-2 rounded-full bg-[#7f85a1] text-black font-afacad"> {anx.anxiety_source.anx_name} </button>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-black font-lato">No anxieties found.</p>
+            <p className="text-black font-afacad">No anxieties found.</p>
           )}
-          <button onClick={() => navigate("/add-anxiety")} className="bg-black-500 font-lato text-white p-2 mt-10">+ Add an Anxiety Source</button>
+          <button onClick={() => navigate("/add-anxiety")} className="bg-black-500 font-afacad text-lg text-white p-2 mt-10">+ Add an Anxiety Source</button>
         </div>
       ) : (
-        <p className="text-center text-black font-lato">No user data available.</p>
+        <p className="text-center text-black font-afacad">No user data available.</p>
       )}
     </div>
   );
