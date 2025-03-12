@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
+import { CHALLENGE_LEVELS, CHALLENGE_COLORS, CHALLENGE_SHAPES } from "../constants/challengeStyles";
 
-const CHALLENGE_LEVELS = ["Green", "Blue", "Black", "DoubleBlack"];
 
 const ViewProgress: React.FC = () => {
     interface Anxiety {
@@ -115,7 +115,7 @@ const ViewProgress: React.FC = () => {
             {anxiety && ( <h1 className="text-6xl text-center text-black font-blaka">{anxiety.anx_name}</h1> )}
     
             {/* Edit Mode Button */}
-            <button className="absolute top-0 right-0 mt-2 p-2 bg-red-500 text-white" onClick={() => setEditMode(!editMode)}>
+            <button className="absolute top-0 right-0 mt-2 p-2 bg-red-400 text-white" onClick={() => setEditMode(!editMode)}>
                 {editMode ? "Cancel" : "Edit"}
             </button>
     
@@ -127,7 +127,7 @@ const ViewProgress: React.FC = () => {
             )}
 
             {/* View Details Button */}
-            <button className="mt-2 p-2 font-lato bg-blue-600 text-white" onClick={() => setDetailsVisible(!detailsVisible)}>
+            <button className="mt-2 p-2 font-lato bg-[#7f85a1] text-white" onClick={() => setDetailsVisible(!detailsVisible)}>
                 {detailsVisible ? "Hide Details" : "View Details"}
             </button>
     
@@ -144,7 +144,7 @@ const ViewProgress: React.FC = () => {
                                 </span>
 
                                 {editMode && (
-                                    <button className="ml-2 p-2 font-lato bg-red-600 text-white" onClick={() => handleDeleteFactor(factor.factor_id)}>
+                                    <button className="ml-2 p-2 font-lato bg-red-450 text-white" onClick={() => handleDeleteFactor(factor.factor_id)}>
                                         Remove Factor
                                     </button>
                                 )}
@@ -154,12 +154,32 @@ const ViewProgress: React.FC = () => {
             ))}
 
             {/* Challenge Buttons */}
-            <div className="mt-4">
-                {CHALLENGE_LEVELS.map(level => (
-                    <button key={level} className="m-2 p-2 font-lato bg-green-600 text-white" onClick={() => handleGenerateChallenge(level)}>
-                        {level}
-                    </button>
-                ))}
+            <div className="mt-4 flex flex-wrap gap-4">
+            {(CHALLENGE_LEVELS as (keyof typeof CHALLENGE_COLORS)[]).map((level) => {
+                    if (level === "Black" || level === "DoubleBlack") {
+                        return (
+                            <button 
+                                key={level} 
+                                className={`${CHALLENGE_COLORS[level]} ${CHALLENGE_SHAPES[level]}`}
+                                onClick={() => handleGenerateChallenge(level)}
+                            >
+                                {/* Counter-rotate the text so it appears straight */}
+                                <span className="-rotate-45">{level}</span>
+                            </button>
+                        );
+                    }
+                    
+                    // Regular handling for other shapes
+                    return (
+                        <button 
+                            key={level} 
+                            className={`${CHALLENGE_COLORS[level]} ${CHALLENGE_SHAPES[level]}`}
+                            onClick={() => handleGenerateChallenge(level)}
+                        >
+                            {level}
+                        </button>
+                    );
+                })}
             </div>
 
             {/* Challenge Description */}
@@ -172,7 +192,7 @@ const ViewProgress: React.FC = () => {
                 <p className="mt-4 text-lg text-red-600">{error}</p>
             )}
             {/* Return Home */}
-            <button onClick={() => navigate("/home")} className="p-2 mt-4 ml-4 bg-black text-white font-lato">Return to Home</button>
+            <button onClick={() => navigate("/home")} className="mt-2 p-2 font-lato bg-[#7f85a1] text-white">Return to Home</button>
 
         </div>
     );    
