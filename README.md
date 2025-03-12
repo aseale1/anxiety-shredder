@@ -25,6 +25,11 @@ To run the app:
 2. Navigate to the server folder and run the command 'npm install' to get all the dependencies, then run 'npx ts-node src/server.ts' to start the frontend.
 Follow the link output in the client terminal to view the app in your browser.
 
+--Test User--
+
+Email: shaunw@fake.net
+Pass: tomatoanx1
+
 --Folder Structure--
 
 client: Contains the frontend code, including React components, pages, and styles.
