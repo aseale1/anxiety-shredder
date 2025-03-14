@@ -85,6 +85,7 @@ const Home = () => {
             <ul className="mt-2 space-y-2">
               {anxieties.map((anx) => (
                 <li key={anx.anx_id} className="text-black text-lg font-afacad">
+                  
                 {/* Navigate to ViewProgress based on selected anxiety */}
                   <button onClick={() => navigate("/view-progress/" + anx.anx_id)} className="p-2 rounded-full bg-[#7f85a1] text-black font-afacad"> {anx.anxiety_source.anx_name} </button>
                 </li>

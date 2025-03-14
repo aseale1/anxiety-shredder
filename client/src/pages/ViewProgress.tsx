@@ -115,7 +115,7 @@ const ViewProgress: React.FC = () => {
     return (
         <div className="h-screen w-screen bg-amber-50">
             {/* Display Anxiety Name */}
-            {anxiety && ( <h1 className="pt-10 text-6xl text-center text-black font-fast">{anxiety.anx_name}</h1> )}
+            {anxiety && ( <h1 className="pt-16 text-6xl text-center text-black font-fast">{anxiety.anx_name}</h1> )}
     
             {/* Edit Mode Button */}
             <button className="absolute top-0 right-0 mt-2 p-2 mr-4 font-afacad text-lg  bg-red-400 text-white" onClick={() => setEditMode(!editMode)}>
@@ -129,6 +129,7 @@ const ViewProgress: React.FC = () => {
                 </button>
             )}
             <div className="flex justify-center mt-5">
+                
             {/* View Details Button */}
             <button className="p-2 font-afacad bg-[#7f85a1] text-white text-center" onClick={() => setDetailsVisible(!detailsVisible)}>
                 {detailsVisible ? "Hide Details" : "View Anxiety  Details"}
