@@ -16,7 +16,7 @@ export const CHALLENGE_SHAPES = {
     // diamond (rotated square)
     "Black": "rotate-45 rounded-none aspect-square flex items-center justify-center w-16",
     // diamond (rotated square)
-    "DoubleBlack": "rotate-45 rounded-none aspect-square flex items-center justify-center w-16"
+    "DoubleBlack": "rotate-45 rounded-none aspect-square flex items-center justify-center w-16 ml-5"
   };
 
 export const CHALLENGE_BUTTON_STYLES = {

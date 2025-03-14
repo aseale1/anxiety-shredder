@@ -175,11 +175,13 @@ const AddAnxiety: React.FC = () => {
 
 
     return (
-        <div className="min-h-screen w-screen bg-amber-50 p-4 text-center">
-            <h1 className="text-6xl text-black text-center font-fast mb-4">Add an Anxiety Source</h1>
-
+        <div className="min-h-screen w-screen bg-mountain bg-center flex justify-center items-center">
+        <div className="absolute inset-0 bg-black opacity-50"></div>
+        <div className="relative w-full max-w-4xl bg-amber-50 rounded-lg p-8 m-4">
+        <h1 className="text-6xl text-black text-center font-fast mb-4">What's making you feel anxious?</h1>
+        <div className="border-b-2 border-black mb-6"></div>
+        
             {/* Display untracked anxieties */}
-            <h2 className="text-2xl text-black font-afacad font-semibold">What is making you feel anxious?</h2>
             {anxieties.map((anxiety) => (
                 <label key={anxiety.anx_id} className="block text-black text-lg font-afacad">
                     <input
@@ -237,15 +239,21 @@ const AddAnxiety: React.FC = () => {
                 </label>
                 ))}
             </div>
+            
+            
             ))}
+            
         </div>
+
         )}
+        
 
             {/* Submit */}
             <button onClick={handleSubmit} className="p-2 mt-4 bg-black text-white font-afacad">Submit</button>
             {/* Return Home */}
             <button onClick={() => navigate("/home")} className="p-2 mt-4 ml-4 bg-black text-white font-afacad">Return to Home</button>
 
+        </div>
         </div>
 
     );

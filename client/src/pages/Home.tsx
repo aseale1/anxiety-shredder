@@ -62,7 +62,11 @@ const Home = () => {
   if (loading) return <p className='h-screen w-screen bg-amber-50 text-center text-2xl text-black font-fast'>Loading...</p>;
 
   return (
-    <div className="h-screen w-screen bg-amber-50">
+    <div className="relative h-screen w-screen">
+    <div className="absolute inset-0 bg-mountain bg-center brightness-150 opacity-80"></div>
+    
+    <div className="relative z-10 pt-10">
+    <div className="bg-amber-50 max-w-2xl mx-auto rounded-xl p-6 shadow-lg">
       <h1 className="text-center text-black font-fast">
         Welcome, {userData?.first_name || 'Loading...'}
       </h1>
@@ -70,6 +74,7 @@ const Home = () => {
         <p className="text-center text-black font-afacad">Loading...</p>
       ) : userData ? (
         <div className="text-center">
+
           {/*
           <p className="text-black font-afacad">Email: {userData.email}</p>
           <p className="text-black font-afacad">Name: {userData.first_name}</p>
@@ -88,12 +93,16 @@ const Home = () => {
           ) : (
             <p className="text-black font-afacad">No anxieties found.</p>
           )}
+          <p className="text-center mt-2 text-black italic font-afacad">select an anxiety source to view your progress</p>
           <button onClick={() => navigate("/add-anxiety")} className="bg-black-500 font-afacad text-lg text-white p-2 mt-10">+ Add an Anxiety Source</button>
         </div>
       ) : (
         <p className="text-center text-black font-afacad">No user data available.</p>
       )}
     </div>
+    </div>
+  </div>
+  
   );
    
 };

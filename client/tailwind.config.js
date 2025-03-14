@@ -12,6 +12,7 @@ module.exports = {
     extend: {
       backgroundImage: {
         skislope: "url('/src/assets/skiLiftStock.jpg')",
+        mountain: "url('/src/assets/mountainStock.png')", // https://pixabay.com/vectors/everest-czomolungma-himalayas-4828404/
       },
       fontFeatureSettings: {
         'afacad': '"auto"',
