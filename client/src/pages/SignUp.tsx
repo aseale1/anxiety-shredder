@@ -42,12 +42,12 @@ return (
     <div className="bg-amber-50 w-3/4 md:w-2/3 lg:w-1/2 p-8 rounded-md shadow-lg">
       <div className="text-center">
         {/* Header */}
-        <div className="font-blaka text-black text-6xl mb-8">Welcome!</div>
+        <div className="font-fast text-black text-6xl mb-8">Welcome!</div>
         <div className="font-normal italic text-black text-2xl mb-8">create new account</div>
 
         {/* User Info Section */}
         <form onSubmit={handleSubmit}>
-          <div className="text-lg text-black text-2xl font-lato mb-1">FIRST NAME</div>
+          <div className="text-lg text-black text-2xl font-afacad mb-1">FIRST NAME</div>
           <input
             type="text"
             placeholder='Name'
@@ -56,7 +56,7 @@ return (
             className="w-full p-2 mb-3 rounded-md border border-gray-300 bg-[#c4c6cf] focus:outline-none"
           />
 
-          <div className="text-lg text-black text-2xl font-lato mb-1">EMAIL ADDRESS</div>
+          <div className="text-lg text-black text-2xl font-afacad mb-1">EMAIL ADDRESS</div>
           <input
             type="email"
             placeholder='example@email.com'
@@ -65,7 +65,7 @@ return (
             className="w-full p-2 mb-3 rounded-md border border-gray-300 bg-[#c4c6cf] focus:outline-none"
           />
 
-          <div className="text-lg text-black text-2xl font-lato mb-1">PASSWORD</div>
+          <div className="text-lg text-black text-2xl font-afacad mb-1">PASSWORD</div>
           <input
             type="password"
             placeholder='Create password'
@@ -74,7 +74,7 @@ return (
             className="w-full p-2 mb-3 rounded-md border border-gray-300 bg-[#c4c6cf] focus:outline-none"
           />
 
-          <div className="text-lg text-black text-2xl font-lato mb-1">CONFIRM PASSWORD</div>
+          <div className="text-lg text-black text-2xl font-afacad mb-1">CONFIRM PASSWORD</div>
           <input
             type="password"
             value={confirmPassword}

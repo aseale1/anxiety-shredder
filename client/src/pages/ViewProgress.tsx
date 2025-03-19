@@ -95,7 +95,10 @@ const ViewProgress: React.FC = () => {
                 chall_level
             });
             console.log('Generated challenge response:', response.data); 
-            setChallengeDescription(`To complete a ${chall_level.toUpperCase()} challenge, try these conditions: ${response.data.description}`);
+            const conditions = response.data.description.split(', ');
+            const formattedConditions: string = conditions.map((condition: string) => `\n• ${condition}`).join('');
+            
+            setChallengeDescription(`To complete a ${chall_level.toUpperCase()} challenge, try these conditions:${formattedConditions}`);
             setError(null);
         } catch (error: any) {
             console.error('Error generating challenge:', error);
@@ -112,39 +115,41 @@ const ViewProgress: React.FC = () => {
     return (
         <div className="h-screen w-screen bg-amber-50">
             {/* Display Anxiety Name */}
-            {anxiety && ( <h1 className="text-6xl text-center text-black font-blaka">{anxiety.anx_name}</h1> )}
+            {anxiety && ( <h1 className="pt-16 text-6xl text-center text-black font-fast">{anxiety.anx_name}</h1> )}
     
             {/* Edit Mode Button */}
-            <button className="absolute top-0 right-0 mt-2 p-2 bg-red-400 text-white" onClick={() => setEditMode(!editMode)}>
+            <button className="absolute top-0 right-0 mt-2 p-2 mr-4 font-afacad text-lg  bg-red-400 text-white" onClick={() => setEditMode(!editMode)}>
                 {editMode ? "Cancel" : "Edit"}
             </button>
     
             {/* Delete Anxiety Button */}
             {editMode && (
-                <button className="mt-2 p-2 font-lato bg-red-600 text-white" onClick={handleDeleteAnxiety}>
+                <button className="mt-2 p-2 font-afacad bg-red-600 text-white" onClick={handleDeleteAnxiety}>
                     Remove Anxiety
                 </button>
             )}
-
+            <div className="flex justify-center mt-5">
+                
             {/* View Details Button */}
-            <button className="mt-2 p-2 font-lato bg-[#7f85a1] text-white" onClick={() => setDetailsVisible(!detailsVisible)}>
-                {detailsVisible ? "Hide Details" : "View Details"}
+            <button className="p-2 font-afacad bg-[#7f85a1] text-white text-center" onClick={() => setDetailsVisible(!detailsVisible)}>
+                {detailsVisible ? "Hide Details" : "View Anxiety  Details"}
             </button>
+            </div>
     
             {/* Display Factors & Their Conditions */}
             {detailsVisible && factors.map((factor) => (
-                <div key={factor.factor_id} className="flex flex-col mt-4">
+                <div key={factor.factor_id} className="flex flex-col mt-4 ml-5">
                     <h2 className="text-xl text-black font-semibold">{factor.factor_name}</h2>
                     {conditions
                         .filter((condition) => condition.factor_id === factor.factor_id)
                         .map((condition) => (
                             <div key={condition.condition_id} className="flex items-center">
-                               <span className="text-lg text-black font-lato">
+                               <span className="text-lg text-black font-afacad">
                                     - {condition.condition_name}: {condition.user_con_rating.length > 0 ? condition.user_con_rating[0].rating : "No rating"}
                                 </span>
 
                                 {editMode && (
-                                    <button className="ml-2 p-2 font-lato bg-red-450 text-white" onClick={() => handleDeleteFactor(factor.factor_id)}>
+                                    <button className="ml-2 p-2 font-afacad bg-red-450 text-white" onClick={() => handleDeleteFactor(factor.factor_id)}>
                                         Remove Factor
                                     </button>
                                 )}
@@ -154,7 +159,9 @@ const ViewProgress: React.FC = () => {
             ))}
 
             {/* Challenge Buttons */}
-            <div className="mt-4 flex flex-wrap gap-4">
+            <p className="text-center mt-10 text-black text-lg italic font-afacad">click a button to generate a challenge</p>
+
+            <div className="mt-4 flex flex-wrap justify-center gap-4">
             {(CHALLENGE_LEVELS as (keyof typeof CHALLENGE_COLORS)[]).map((level) => {
                     if (level === "Black" || level === "DoubleBlack") {
                         return (
@@ -184,7 +191,7 @@ const ViewProgress: React.FC = () => {
 
             {/* Challenge Description */}
             {challengeDescription && (
-                <p className="mt-4 text-lg text-black">{challengeDescription}</p>
+                <p className="mt-6 text-lg text-center text-black whitespace-pre-line">{challengeDescription}</p>
             )}
 
             {/* Error Message */}
@@ -192,7 +199,7 @@ const ViewProgress: React.FC = () => {
                 <p className="mt-4 text-lg text-red-600">{error}</p>
             )}
             {/* Return Home */}
-            <button onClick={() => navigate("/home")} className="mt-2 p-2 font-lato bg-[#7f85a1] text-white">Return to Home</button>
+            <button onClick={() => navigate("/home")} className="absolute top-0 left-0 mt-2 p-2 ml-4 font-afacad text-lg bg-[#7f85a1] text-white">Return to Home</button>
 
         </div>
     );    
