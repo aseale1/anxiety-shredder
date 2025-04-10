@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
+//import { CHALLENGE_LEVELS } from "../constants/challengeStyles";
 
 const AddAnxiety: React.FC = () => {
 
@@ -21,6 +22,8 @@ const AddAnxiety: React.FC = () => {
     const [conditions, setConditions] = useState<Condition[]>([]);
     const [rankings, setRankings] = useState<{ condition_id: number; rating: number }[]>([]);  
     const [selectedFactorName, setSelectedFactorName] = useState<string | null>(null);
+    const [validationMessage, setValidationMessage] = useState<string | null>(null);
+    const [canSubmit, setCanSubmit] = useState<boolean>(false);
 
     useEffect(() => {
         console.log("Conditions before rendering:", conditions);

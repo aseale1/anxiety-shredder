@@ -13,22 +13,33 @@ const CHALLENGE_RULES = {
   };
 
 // Generate a challenge based on condition ratings
-// Generate a challenge based on condition ratings
 const generateChallenge: RequestHandler = async (req, res) => {
     const { firebase_uid, anx_id, chall_level }: { firebase_uid: string; anx_id: string; chall_level: keyof typeof CHALLENGE_RULES } = req.body;
     try {
         const conditions = await prisma.user_con_rating.findMany({
-            where: { firebase_uid },
-            select: {
-                con_id: true,
-                rating: true,
-                conditions: {
-                    select: {
-                        condition_name: true,
-                    },
+          where: { 
+            firebase_uid,
+            conditions: {
+                factor: {
+                    anx_id: parseInt(anx_id)
+                }
+            }
+        },
+        select: {
+            con_id: true,
+            rating: true,
+            conditions: {
+                select: {
+                    condition_name: true,
+                    factor: {
+                        select: {
+                            anx_id: true
+                        }
+                    }
                 },
             },
-        });
+        },
+    })
         console.log('Conditions:', conditions);
 
         // Categorize conditions based on their ratings
@@ -92,25 +103,58 @@ const generateChallenge: RequestHandler = async (req, res) => {
     }
 };
 
-// Fetch all challenges for some user
-const getUserChallenges: RequestHandler = async (req, res) => {
+// Fetch a user's challenges for a specific anxiety
+const getUserChallengesForAnxiety: RequestHandler = async (req, res) => {
     const { firebase_uid } = req.params;
+    const { anx_id } = req.query;
     try {
       const challenges = await prisma.challenges.findMany({
-        where: { firebase_uid },
+        where: {
+          firebase_uid,
+          anx_id: parseInt(anx_id as string),
+        },
       });
       res.status(200).json(challenges);
     } catch (err) {
-      res.status(500).json({ error: "Error fetching challenges" });
+      res.status(500).json({ error: "Error fetching user's challenges" });
     }
   };
 
 
-// Update a challenge to mark it as completed
-//TODO: Implement this route
 
+// Update a challenge to mark it as completed
+const completeChallenge: RequestHandler = async (req, res) => {
+    const { firebase_uid, chall_id } = req.body;
+    try {
+      const challenge = await prisma.challenges.update({
+        where: { chall_id },
+        data: {
+          completed: true,
+        },
+      });
+      res.status(200).json(challenge);
+    } catch (err) {
+      res.status(500).json({ error: "Error completing challenge" });
+    }
+  };
+
+
+// Delete a challenge
+const deleteChallenge: RequestHandler = async (req, res) => {
+    const { firebase_uid, chall_id } = req.body;
+    try {
+      const challenge = await prisma.challenges.delete({
+        where: { chall_id },
+      });
+      res.status(200).json(challenge);
+    } catch (err) {
+      res.status(500).json({ error: "Error deleting challenge" });
+    }
+  };
 
 challengeRouter.post('/generate-challenge', generateChallenge);
-challengeRouter.get('/:firebase_uid/user-challenges', getUserChallenges);
+challengeRouter.get('/:firebase_uid/user-challenges', getUserChallengesForAnxiety);
+challengeRouter.put('/complete-challenge', completeChallenge);
+challengeRouter.delete('/delete-challenge', deleteChallenge);
 
 export default challengeRouter;
