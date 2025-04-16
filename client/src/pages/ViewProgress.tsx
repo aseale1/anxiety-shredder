@@ -357,14 +357,18 @@ const ViewProgress: React.FC = () => {
                             
                             {/* Challenge Action Buttons */}
                             <div className="flex justify-center gap-4 mt-4">
+                                
+                                {/*
                                 <button 
                                     className="p-2 font-afacad bg-blue-500 text-white rounded"
                                     onClick={handleRegenerateChallenge}
                                 >
                                     Regenerate
                                 </button>
+                                */}
+
                                 <button 
-                                    className="p-2 font-afacad bg-green-500 text-white rounded"
+                                    className="p-2 font-afacad bg-[#7f85a1] text-white rounded"
                                     onClick={handleTrackChallenge}
                                 >
                                     Track Challenge
