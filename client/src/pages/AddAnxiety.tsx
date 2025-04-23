@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
+//import { CHALLENGE_LEVELS } from "../constants/challengeStyles";
 
 const AddAnxiety: React.FC = () => {
 
@@ -21,18 +22,19 @@ const AddAnxiety: React.FC = () => {
     const [conditions, setConditions] = useState<Condition[]>([]);
     const [rankings, setRankings] = useState<{ condition_id: number; rating: number }[]>([]);  
     const [selectedFactorName, setSelectedFactorName] = useState<string | null>(null);
+    const [validationErrors, setValidationErrors] = useState<string[]>([]);
+    const [ratingCounts, setRatingCounts] = useState<Record<number, number>>({0: 0, 1: 0, 2: 0, 3: 0});
+    const [factorCounts, setFactorCounts] = useState<Record<number, Set<number>>>({0: new Set(), 1: new Set(), 2: new Set(), 3: new Set()});
+    const [canSubmit, setCanSubmit] = useState(false);
 
     useEffect(() => {
-        console.log("Conditions before rendering:", conditions);
+        if (!currentUser) return;
+
         const fetchUntrackedAnxieties = async () => {
             try {
-                if (currentUser) {
-                    console.log(`Fetching untracked anxieties for user: ${currentUser.uid}`);
-                    const response = await axios.get(`/api/user/${currentUser.uid}/anxieties/untracked-anxieties`);
-                    setAnxieties(response.data);
-                } else {
-                    console.error("currentUser is null or undefined");
-                }
+                console.log(`Fetching untracked anxieties for user: ${currentUser.uid}`);
+                const response = await axios.get(`/api/user/${currentUser.uid}/anxieties/untracked-anxieties`);
+                setAnxieties(response.data);
             } catch (error) {
                 console.error("Error fetching untracked anxieties:", error);
             }
@@ -43,7 +45,7 @@ const AddAnxiety: React.FC = () => {
     const handleAnxietySelect = (anxiety: any) => {
         setSelectedAnxieties(anxiety);
         axios.get(`/api/anxieties/${anxiety}/factors`).then((response) => {
-            console.log(`Fetched factors for anxiety ${anxiety} (${anxiety.anxiety_name}):`, response.data);
+            console.log(`Fetched factors for anxiety ${anxiety}:`, response.data);
             setFactors(response.data);
         }).catch((error) => {
             console.error("Error fetching factors:", error);
@@ -117,6 +119,7 @@ const AddAnxiety: React.FC = () => {
             console.error("Error fetching conditions:", error);
         });
         }
+        validateSelections();
     }
     
     const handleRankingChange = (condition_id: number | null, factor_id: number, condition_name: string, rating: number) => {
@@ -124,23 +127,102 @@ const AddAnxiety: React.FC = () => {
         console.log(`Rating for condition ${condition_name} changed to ${rating}`);
         
         if (condition_id === null || condition_id === undefined) {
-        console.error("condition_id is null or undefined for condition:", condition_name);
-        return;
+            console.error("condition_id is null or undefined for condition:", condition_name);
+            return;
         }
         
         setRankings((prevRankings) => {
         const newRankings = [...prevRankings];
         const existingRankingIndex = newRankings.findIndex((r) => r.condition_id === condition_id);
+        
+        let oldRating: number | null = null;
         if (existingRankingIndex !== -1) {
+            oldRating = newRankings[existingRankingIndex].rating;
             newRankings[existingRankingIndex].rating = rating;
         } else {
             newRankings.push({ condition_id, rating });
         }
-        return newRankings;
+        
+        // Update rating counts for validation
+        setRatingCounts(prev => {
+            const newCounts = {...prev};
+            
+            // If changing an existing rating, decrement the old count
+            if (oldRating !== null) {
+                newCounts[oldRating] = Math.max(0, (newCounts[oldRating] || 0) - 1);
+            }
+            
+            // Increment the new rating count
+            newCounts[rating] = (newCounts[rating] || 0) + 1;
+            return newCounts;
         });
+        
+        // Update factor counts for each rating
+        setFactorCounts(prev => {
+            const newFactorCounts = {...prev};
+            
+            // If changing an existing rating, remove this factor from old rating's set
+            if (oldRating !== null) {
+                newFactorCounts[oldRating] = new Set([...newFactorCounts[oldRating]].filter(fid => fid !== factor_id));
+            }
+            
+            // Add this factor to the new rating's set
+            newFactorCounts[rating] = newFactorCounts[rating] || new Set();
+            newFactorCounts[rating].add(factor_id);
+            
+            return newFactorCounts;
+        });
+        
+        return newRankings;
+    });
+    
+    validateSelections();
     }
 
+    const validateSelections = () => {
+        const errors: string[] = [];
+        if (!selectedAnxieties) {
+            errors.push("Please select an anxiety.");
+        }
+
+        if (selectedFactors.length < 3 ) {
+            errors.push("Please select at least 3 factors.");
+        }
+
+        const hasRating1 = ratingCounts[1] >= 3;
+        const hasRating2 = ratingCounts[2] >= 3;
+        const hasRating3 = ratingCounts[3] >= 1;
+
+        if (!hasRating1) {
+            errors.push("Please rate at least 3 conditions as '1-somewhat anxious'");
+        }
+        
+        if (!hasRating2) {
+            errors.push("Please rate at least 3 conditions as '2-very anxious'");
+        }
+        
+        if (!hasRating3) {
+            errors.push("Please rate at least 1 condition as '3-extremely anxious'");
+        }
+
+        const ratedFactors = new Set([
+            ...factorCounts[1],
+            ...factorCounts[2],
+            ...factorCounts[3]
+        ]);
+
+        if (ratedFactors.size < 3) {
+            errors.push("Please rate conditions from at least 3 different factors.");
+        }
+        setValidationErrors(errors);
+        setCanSubmit(errors.length === 0);
+    };
+
     const handleSubmit = async () => {
+        if (!canSubmit) {
+            console.error("Form validation failed. Please fix the errors before submitting.");
+            return;
+        }
         if (!currentUser) {
             console.error("User is not authenticated");
             return;
@@ -152,7 +234,7 @@ const AddAnxiety: React.FC = () => {
         try {
             // Add anxiety to user
             await axios.post(`/api/user-anxiety`, { firebase_uid: currentUser.uid, anx_id: selectedAnxieties });
-    
+
             // Add factors to user
             for (const factor of selectedFactors) {
                 try {
@@ -161,7 +243,7 @@ const AddAnxiety: React.FC = () => {
                     console.error(`Error adding factor ${factor.factor_id}:`, error);
                 }
             }
-    
+
             // Add conditions to user
             try {
                 await axios.post(`/api/${currentUser.uid}/user-condition`, { firebase_uid: currentUser.uid, conditions: rankings });
@@ -172,8 +254,7 @@ const AddAnxiety: React.FC = () => {
             console.error(`Error submitting form:`, error);
         }
         navigate('/home');
-    }
-
+    };
 
     return (
         <div className="min-h-screen w-screen bg-mountain bg-center flex justify-center items-center">
@@ -219,35 +300,37 @@ const AddAnxiety: React.FC = () => {
             <h2 className="text-2xl text-black font-afacad text-center font-semibold mb-2 mt-4">When it comes to these factors, how anxious do these conditions make you feel?</h2>
             <p className="italic text-black text-center text-lg font-afacad mb-2">0-not anxious at all, 1-somewhat anxious, 2-very anxious, 3-extremely anxious</p>
             {conditions.map((condition, index) => (
-            <div key={`${condition.condition_id}-${index}`} className="mb-4 text-center">
-                <label
-                className="block text-black text-xl text-bold font-afacad"
-                >
-                {condition.condition_name}
-                </label>
-                {[0, 1, 2, 3].map((rating) => (
-                <label key={rating} className="inline-block mr-4 text-black font-afacad text-lg">
-                    <input
-                    type="radio"
-                    name={`rating-${condition.condition_id}`}
-                    checked={rankings.find((r) => r.condition_id === condition.condition_id)?.rating === rating}
-                    onChange={() => handleRankingChange(
-                        condition.condition_id, 
-                        condition.factor_id, 
-                        condition.condition_name, 
-                        rating
-                    )}
-                    />
-                    {rating}
-                </label>
-                ))}
-            </div>
-            
-            
+                <div key={`${condition.condition_id}-${index}`} className="mb-4 text-center">
+                    <label className="block text-black text-xl text-bold font-afacad">
+                        {condition.condition_name}
+                    </label>
+                    {[0, 1, 2, 3].map((rating) => (
+                        <label key={rating} className="inline-block mr-4 text-black font-afacad text-lg">
+                            <input
+                                type="radio"
+                                name={`rating-${condition.condition_id}`}
+                                checked={rankings.find((r) => r.condition_id === condition.condition_id)?.rating === rating}
+                                onChange={() => handleRankingChange(
+                                    condition.condition_id, 
+                                    condition.factor_id, 
+                                    condition.condition_name, 
+                                    rating
+                                )}
+                            />
+                            {rating}
+                        </label>
+                    ))}
+                </div>
             ))}
-            
-        </div>
 
+            {validationErrors.length > 0 && (
+                <div className="text-red-500 text-center mb-4">
+                    {validationErrors.map((error, index) => (
+                        <p key={index}>{error}</p>
+                    ))}
+                </div>
+            )}
+        </div>
         )}
         
             {/* Return Home */}
