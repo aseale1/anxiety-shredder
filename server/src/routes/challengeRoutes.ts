@@ -14,7 +14,7 @@ const CHALLENGE_RULES = {
 
 // Generate a challenge based on condition ratings
 const generateChallenge: RequestHandler = async (req, res): Promise<void> => {
-    const { firebase_uid, anx_id, chall_level }: { firebase_uid: string; anx_id: string; chall_level: keyof typeof CHALLENGE_RULES } = req.body;
+    const { firebase_uid, anx_id, chall_level, save = true, }: { firebase_uid: string; anx_id: string; chall_level: keyof typeof CHALLENGE_RULES; save?: boolean; challenge?: any; } = req.body;
     try {
         const conditions = await prisma.user_con_rating.findMany({
           where: { 
@@ -31,6 +31,7 @@ const generateChallenge: RequestHandler = async (req, res): Promise<void> => {
             conditions: {
                 select: {
                     condition_name: true,
+                    con_desc: true,
                     factor_id: true,
                     factor: {
                         select: {
@@ -56,7 +57,7 @@ const generateChallenge: RequestHandler = async (req, res): Promise<void> => {
         }
 
         // Categorize conditions based on their ratings
-        const conditionsByRating: Record<number, { con_id: string, condition_name: string, factor_id: number, factor_name: string }[]> = {};
+        const conditionsByRating: Record<number, { con_id: string, condition_name: string, con_desc: string, factor_id: number, factor_name: string }[]> = {};
         conditions.forEach((condition) => {
             if (condition.rating !== null) {
                 const rating = condition.rating;
@@ -66,6 +67,7 @@ const generateChallenge: RequestHandler = async (req, res): Promise<void> => {
                 conditionsByRating[rating].push({ 
                   con_id: condition.con_id.toString(), 
                   condition_name: condition.conditions.condition_name,
+                  con_desc: condition.conditions.con_desc,
                   factor_id: condition.conditions.factor_id ?? 0, // Default to 0 if null
                   factor_name: condition.conditions.factor?.factor_name ?? 'Unknown'
                 
@@ -76,7 +78,7 @@ const generateChallenge: RequestHandler = async (req, res): Promise<void> => {
         
         // Select conditions based on challenge rules
         const requiredConditions = CHALLENGE_RULES[chall_level];
-        const selectedConditions: { con_id: string, condition_name: string, factor_id: number }[] = [];
+        const selectedConditions: { con_id: string, condition_name: string, con_desc: string, factor_id: number }[] = [];
 
         const usedFactorIds = new Set<number>();
         
@@ -102,6 +104,7 @@ const generateChallenge: RequestHandler = async (req, res): Promise<void> => {
                     selectedConditions.push({
                         con_id: condition.con_id,
                         condition_name: condition.condition_name,
+                        con_desc: condition.con_desc,
                         factor_id: condition.factor_id
                     });
                     usedFactorIds.add(condition.factor_id);
@@ -125,6 +128,7 @@ const generateChallenge: RequestHandler = async (req, res): Promise<void> => {
                             selectedConditions.push({
                                 con_id: condition.con_id,
                                 condition_name: condition.condition_name,
+                                con_desc: condition.con_desc,
                                 factor_id: condition.factor_id
                             });
                             usedFactorIds.add(condition.factor_id);
@@ -140,7 +144,7 @@ const generateChallenge: RequestHandler = async (req, res): Promise<void> => {
         const selectedFactorCount = new Set(selectedConditions.map(cond => cond.factor_id)).size;
 
         // Create the challenge description
-        const challengeDescription = selectedConditions.map(cond => cond.condition_name).join(', ');
+        const challengeDescription = selectedConditions.map(cond => cond.con_desc).join(', ');
         console.log('Challenge description:', challengeDescription);
 
         // Create the challenge
