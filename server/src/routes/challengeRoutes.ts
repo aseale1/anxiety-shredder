@@ -215,9 +215,103 @@ const deleteChallenge: RequestHandler = async (req, res) => {
     }
   };
 
+// Generate max number of challenges
+const generateMaxChallenges: RequestHandler = async (req, res) => {
+    const { firebase_uid, anx_id } = req.body;
+    try {
+        const conditions = await prisma.user_con_rating.findMany({
+            where: {
+                firebase_uid,
+                conditions: {
+                    factor: {
+                        anx_id: parseInt(anx_id as string)
+                    }}},
+            select: {
+                con_id: true,
+                rating: true,
+                conditions: {
+                    select: {
+                        condition_name: true,
+                        con_desc: true,
+                        factor_id: true,
+                        factor: {
+                            select: {
+                                factor_id: true,
+                                factor_name: true,
+                            }}}}}
+        });
+
+        const conditionsByRating: { [key in 1 | 2 | 3]: typeof conditions[0][] } = {
+            1: [],
+            2: [],
+            3: []
+        };
+
+        conditions.forEach(condition => {
+          if (condition.rating) {
+            conditionsByRating[condition.rating as 1 | 2 | 3].push(condition);
+          }
+        });
+        // Calculate the maximum number of challenges for each level
+        const maxChallenges: Record<keyof typeof CHALLENGE_RULES, number> = {
+          Green: 0,
+          Blue: 0,
+          Black: 0,
+          DoubleBlack: 0,
+        };
+      
+        (Object.keys(CHALLENGE_RULES) as Array<keyof typeof CHALLENGE_RULES>).forEach(level => {
+          const rules = CHALLENGE_RULES[level];
+
+        // Calculate min possible challenges based on rules and conditions available
+          let maxPossible = Number.MAX_SAFE_INTEGER;
+
+          Object.entries(rules).forEach(([rating, conCount]) => {
+            if (conCount > 0) {
+              const available = conditionsByRating[Number(rating) as 1 | 2 | 3].length;
+              const possibleChallenges = Math.floor(available / conCount);
+              maxPossible = Math.min(maxPossible, possibleChallenges);
+            }
+          });
+
+          maxChallenges[level] = maxPossible;
+        });
+
+        res.status(200).json(maxChallenges);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Error generating max challenges" });
+    }
+};
+
+// Generate multiple challenges at once
+const generateFullMountain: RequestHandler = async (req, res) => {
+    try {
+        const { firebase_uid, anx_id } = req.body;
+        
+        if (!firebase_uid || !anx_id) {
+            res.status(400).json({ error: 'Missing required parameters' });
+            return;
+        }
+
+        const challenges = await prisma.challenges.findMany({
+            where: {
+                firebase_uid,
+                anx_id: parseInt(anx_id),
+            },
+        });
+        res.json(challenges);
+    } catch (error) {
+        console.error('Error generating mountain:', error);
+        res.status(500).json({ error: 'Failed to generate mountain' });
+    }
+};
+
 challengeRouter.post('/generate-challenge', generateChallenge);
 challengeRouter.get('/:firebase_uid/user-challenges', getUserChallengesForAnxiety);
 challengeRouter.put('/complete-challenge', completeChallenge);
 challengeRouter.delete('/delete-challenge', deleteChallenge);
+challengeRouter.get('/generate-max-challenges/:anx_id', generateMaxChallenges);
+challengeRouter.post('/generate-full-mountain', generateFullMountain);
 
 export default challengeRouter;

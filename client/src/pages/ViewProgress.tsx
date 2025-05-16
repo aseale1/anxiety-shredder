@@ -247,6 +247,13 @@ const ViewProgress: React.FC = () => {
                     View Active Challenges
                 </button>
             </div>
+
+            {/* Generate Mountain Button */}
+            <div className="flex justify-center mt-5">
+                <button className="p-2 font-afacad bg-[#7f85a1] text-white text-center" onClick={() => window.open("/generate-mountain/" + anx_id, "_blank", "noopener,noreferrer")}>
+                    Generate Mountain
+                </button>
+            </div>
     
             {/* Display Factors & Their Conditions */}
             {detailsVisible && factors.map((factor) => (
