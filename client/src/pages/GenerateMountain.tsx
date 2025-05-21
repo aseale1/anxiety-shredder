@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
-import { CHALLENGE_LEVELS, CHALLENGE_COLORS, CHALLENGE_SHAPES } from "../constants/challengeStyles";
+// import { CHALLENGE_LEVELS, CHALLENGE_COLORS, CHALLENGE_SHAPES } from "../constants/challengeStyles";
 
 interface Challenge {
   challenge_id: number;
@@ -17,69 +17,52 @@ const GenerateMountain: React.FC = () => {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
     const [anxiety, setAnxiety] = useState<any>(null);
-    const [maxChallenges, setMaxChallenges] = useState<any>({});
-    const [generatedMountain, setGeneratedMountain] = useState<Challenge[]>([]);
+    const [generatedMountain, setGeneratedMountain] = useState<any>({});
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchChallengeData = async () => {
+        if (!currentUser) {
+            console.error('User is not logged in');
+        }
+
+        if (!anx_id) {
+            console.error('anx_id parameter is missing');
+        }
+
+        const fetchAnxiety = async () => {
             try {
-                if (currentUser) {
-                    const anxResponse = await axios.get(`/api/anxieties/${anx_id}`);
-                    setAnxiety(anxResponse.data);
+                const response = await axios.get(`/api/anxieties/${anx_id}`);
+                setAnxiety(response.data);
+            } catch (error) {
+                console.error('Error fetching anxiety:', error);
+                setError('Failed to fetch anxiety');
+            }
+        };
 
-                    const maxChallengesResponse = await axios.get(`/api/generate-max-challenges/${anx_id}`);
-                    setMaxChallenges(maxChallengesResponse.data);
-                }} catch (err) {
-                    console.error(err);
-                    setError("Error fetching challenge data");
-                } finally {
-                    setLoading(false);
-                }};
-
-        fetchChallengeData();
+        fetchAnxiety();
     }, [anx_id, currentUser]);
 
-    useEffect (() => {
-        const generateFullMountain = async () => {
-            try {
-            if (currentUser && anxiety?.anx_id) {
-                const response = await axios.post(`/api/generate-full-mountain`, {
-                firebase_uid: currentUser.uid,
-                anx_id: anxiety.anx_id,
-                });
-                console.log("Full mountain generated:", response.data);
-                setGeneratedMountain(response.data);
-            }
-            } catch (error) {
-            console.error("Error generating full mountain:", error);
-            }};
-        generateFullMountain();
-        }, [anxiety, currentUser]);
+    useEffect(() => {
+        if (anxiety) {
+            const generateFullMountain = async () => {
+                try {
+                    const maxChallsResponse = await axios.post(`/api/generate-max-challenges/${anx_id}`, {
+                        firebase_uid: currentUser,
+                        anx_id: anxiety.anx_id,
+                    });
 
-    /*
-    const handleGenerateFullMountain = async () => {
-        // Logic to generate multiple challenges
-        try {
-            if (currentUser) {
-                const response = await axios.post(`/api/generate-full-mountain`, {
-                    firebase_uid: currentUser.uid,
-                    anx_id: anxiety.anx_id,
-                });
-                console.log("Full mountain generated:", response.data);
-                setGeneratedMountain(response.data);
-            }
-        } catch (error) {
-            console.error("Error generating full mountain:", error);
-            if (axios.isAxiosError(error)) {
-                setError(error.response?.data.message || "An error occurred");
-            } else {
-                setError("An error occurred");
+                    console.log('Full mountain generated:', maxChallsResponse.data);
+                    setGeneratedMountain(maxChallsResponse.data);
+                } catch (error) {
+                    console.error('Error generating full mountain:', error);
+                    setError('Failed to generate mountain');
+                }
+            };
+
+            generateFullMountain();
         }
-        }
-    };
-    */
+    }, [anxiety, anx_id, currentUser]);
 
     return (
             <div className="h-screen w-screen bg-amber-50">
@@ -94,6 +77,7 @@ const GenerateMountain: React.FC = () => {
                             <div key={challenge.challenge_id}>
                                 <h2 className="text-lg font-bold">{challenge.chall_level}</h2>
                                 <p>{challenge.description}</p>
+
                             </div>
                         ))}
                     </div>
