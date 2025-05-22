@@ -141,22 +141,48 @@ const generateChallenge: RequestHandler = async (req, res): Promise<void> => {
         if (selectedConditions.length < 3) {
           throw new Error("Not enough conditions to generate challenge");
         }
-        const selectedFactorCount = new Set(selectedConditions.map(cond => cond.factor_id)).size;
 
         // Create the challenge description
-        const challengeDescription = selectedConditions.map(cond => cond.con_desc).join(', ');
+        const challengeDescription = selectedConditions.map(cond => cond.con_desc || cond.condition_name).join(', ');
         console.log('Challenge description:', challengeDescription);
 
-        // Create the challenge
+        // Create the challenge, but DO NOT save to DB yet
+        res.status(200).json({
+            firebase_uid,
+            anx_id: parseInt(anx_id),
+            chall_level,
+            description: challengeDescription,
+            selectedConditions,
+            // This is a preview, not saved to database yet
+            preview: true
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Error generating challenge preview" });
+    }
+};
+
+// Save a challenge to the database
+const saveChallenge: RequestHandler = async (req, res): Promise<void> => {
+    const { 
+        firebase_uid, 
+        anx_id, 
+        chall_level, 
+        description, 
+        selectedConditions 
+    } = req.body;
+    
+    try {
+        // Create the challenge in the database
         const challenge = await prisma.challenges.create({
             data: {
                 firebase_uid,
                 anx_id: parseInt(anx_id),
                 chall_level,
                 completed: false,
-                description: challengeDescription,
+                description,
                 chall_conditions: {
-                    create: selectedConditions.map((cond) => ({
+                    create: selectedConditions.map((cond: { con_id: string }) => ({
                         conditions: { connect: { con_id: parseInt(cond.con_id) } },
                     })),
                 },
@@ -166,7 +192,7 @@ const generateChallenge: RequestHandler = async (req, res): Promise<void> => {
         res.status(201).json(challenge);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: "Error generating challenge" });
+        res.status(500).json({ error: "Error saving challenge" });
     }
 };
 
@@ -219,9 +245,80 @@ const deleteChallenge: RequestHandler = async (req, res) => {
     }
   };
 
+// Generate max number of challenges
+const generateMaxChallenges: RequestHandler = async (req, res) => {
+    const { firebase_uid, anx_id } = req.body;
+    try {
+        const conditions = await prisma.user_con_rating.findMany({
+            where: {
+                firebase_uid,
+                conditions: {
+                    factor: {
+                        anx_id: parseInt(anx_id as string)
+                    }}},
+            select: {
+                con_id: true,
+                rating: true,
+                conditions: {
+                    select: {
+                        condition_name: true,
+                        con_desc: true,
+                        factor_id: true,
+                        factor: {
+                            select: {
+                                factor_id: true,
+                                factor_name: true,
+                            }}}}}
+        });
+
+        const conditionsByRating: { [key in 1 | 2 | 3]: typeof conditions[0][] } = {
+            1: [],
+            2: [],
+            3: []
+        };
+
+        conditions.forEach(condition => {
+          if (condition.rating) {
+            conditionsByRating[condition.rating as 1 | 2 | 3].push(condition);
+          }
+        });
+        // Calculate the maximum number of challenges for each level
+        const maxChallenges: Record<keyof typeof CHALLENGE_RULES, number> = {
+          Green: 0,
+          Blue: 0,
+          Black: 0,
+          DoubleBlack: 0,
+        };
+      
+        (Object.keys(CHALLENGE_RULES) as Array<keyof typeof CHALLENGE_RULES>).forEach(level => {
+          const rules = CHALLENGE_RULES[level];
+
+        // Calculate min possible challenges based on rules and conditions available
+          let maxPossible = Number.MAX_SAFE_INTEGER;
+
+          Object.entries(rules).forEach(([rating, conCount]) => {
+            if (conCount > 0) {
+              const available = conditionsByRating[Number(rating) as 1 | 2 | 3].length;
+              const possibleChallenges = Math.floor(available / conCount);
+              maxPossible = Math.min(maxPossible, possibleChallenges);
+            }
+          });
+
+          maxChallenges[level] = maxPossible;
+        });
+
+        res.status(200).json(maxChallenges);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Error generating max challenges" });
+    }
+};
+
 challengeRouter.post('/generate-challenge', generateChallenge);
+challengeRouter.post('/save-challenge', saveChallenge);
 challengeRouter.get('/:firebase_uid/user-challenges', getUserChallengesForAnxiety);
 challengeRouter.put('/complete-challenge', completeChallenge);
 challengeRouter.delete('/delete-challenge', deleteChallenge);
+challengeRouter.post('/generate-max-challenges', generateMaxChallenges);
 
 export default challengeRouter;

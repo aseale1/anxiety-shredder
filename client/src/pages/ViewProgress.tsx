@@ -25,6 +25,19 @@ const ViewProgress: React.FC = () => {
         description: string;
     }
 
+    interface ChallengePreview {
+        firebase_uid: string;
+        anx_id: number;
+        chall_level: string;
+        description: string;
+        selectedConditions: {
+            con_id: number;
+            condition_name: string;
+            factor_id: number;
+        }[];
+        preview: boolean;
+    }
+
     const { anx_id } = useParams();
     const navigate = useNavigate();
     const { currentUser } = useAuth();
@@ -33,13 +46,12 @@ const ViewProgress: React.FC = () => {
     const [conditions, setConditions] = useState<Condition[]>([]);
     const [editMode, setEditMode] = useState<boolean>(false);
     const [currentChallLevel, setCurrentChallLevel] = useState<string | null>(null);
-    //const [challenge, setChallenge] = useState<string | null>(null);
     const [detailsVisible, setDetailsVisible] = useState<boolean>(false);
     const [challengeDescription, setChallengeDescription] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [viewingChallenges, setViewingChallenges] = useState<boolean>(false);
     const [activeChallenges, setActiveChallenges] = useState<Challenge[]>([]);
-    const [currentChallengeData, setCurrentChallengeData] = useState<Challenge | null>(null);
+    const [currentChallengePreview, setCurrentChallengePreview] = useState<ChallengePreview | null>(null);
 
     useEffect(() => {
         const fetchAnxietyAndFactors = async () => {
@@ -129,7 +141,7 @@ const ViewProgress: React.FC = () => {
                 save: false // Don't save the challenge unless the user decides to track it
             });
             console.log('Generated challenge response:', response.data); 
-            setCurrentChallengeData(response.data);
+            setCurrentChallengePreview(response.data);
             const conditions = response.data.description.split(', ');
             const formattedConditions: string = conditions.map((condition: string) => `\n• ${condition}`).join('');
             
@@ -147,43 +159,32 @@ const ViewProgress: React.FC = () => {
             }
             setChallengeDescription(null);
             setCurrentChallLevel(null);
-            setCurrentChallengeData(null);
+            setCurrentChallengePreview(null);
     }
 };
 
     const handleTrackChallenge = async () => {
-        if (currentChallengeData && currentChallLevel) {
-        try {
-            const response = await axios.post(`/api/generate-challenge`, {
-                firebase_uid: currentUser?.uid,
-                anx_id: anx_id,
-                chall_level: currentChallLevel,
-                challenge: currentChallengeData,
-                save: true 
-            });
-
-            await fetchActiveChallenges();
-            alert("Challenge tracked successfully!");
-            setChallengeDescription(null);
-            setCurrentChallLevel(null);
-            setCurrentChallengeData(null);
-        } catch (error) {
-            console.error("Error tracking challenge:", error);
-            setError("Error tracking challenge. Please try again.");
-        }
-    }
-    };
-
-    const handleMarkCompleted = async (chall_id: number) => {
-        try {
-            await axios.put(`api/complete-challenge`, {
-                firebase_uid: currentUser?.uid,
-                chall_id: chall_id,
-            });
-            setActiveChallenges(activeChallenges.filter(challenge => challenge.chall_id !== chall_id));
-        } catch (error) {
-            console.error("Error marking challenge as completed:", error);
-            setError("Error marking challenge as completed.");
+        if (currentChallengePreview) {
+            try {
+                const response = await axios.post(`/api/save-challenge`, {
+                    firebase_uid: currentUser?.uid,
+                    anx_id: anx_id,
+                    chall_level: currentChallengePreview.chall_level,
+                    description: currentChallengePreview.description,
+                    selectedConditions: currentChallengePreview.selectedConditions
+                });
+                
+                console.log('Challenge saved response:', response.data);
+                alert("Challenge has been tracked successfully!");
+                
+                // Reset the preview state
+                setChallengeDescription(null);
+                setCurrentChallLevel(null);
+                setCurrentChallengePreview(null);
+            } catch (error) {
+                console.error('Error saving challenge:', error);
+                setError("Error tracking challenge. Please try again.");
+            }
         }
     };
     const handleDeleteChallenge = async (chall_id: number) => {
@@ -212,27 +213,8 @@ const ViewProgress: React.FC = () => {
         setViewingChallenges(true);
         setChallengeDescription(null);
         setCurrentChallLevel(null);
-        setCurrentChallengeData(null);
+        setCurrentChallengePreview(null);
         await fetchActiveChallenges();
-        }
-    };
-
-    const handleRegenerateChallenge = async () => {
-        if (currentChallLevel && currentChallengeData) {
-            // Delete the current challenge since we're regenerating
-            try {
-                await axios.delete(`/api/delete-challenge`, {
-                    data: {
-                        firebase_uid: currentUser?.uid,
-                        chall_id: currentChallengeData.chall_id
-                    }
-                });
-                // Generate a new one
-                await handleGenerateChallenge(currentChallLevel);
-            } catch (error) {
-                console.error("Error during regeneration:", error);
-                setError("Failed to regenerate challenge. Please try again.");
-            }
         }
     };
 
@@ -264,6 +246,21 @@ const ViewProgress: React.FC = () => {
             <div className="flex justify-center mt-5">
                 <button className="p-2 font-afacad bg-[#7f85a1] text-white text-center" onClick={handleViewChallenges}>
                     {viewingChallenges ? "Hide Active Challenges" : "View Active Challenges"}
+                </button>
+            </div>
+
+            {/* Generate Mountain Button */}
+            <div className="flex justify-center mt-5">
+                <button className="p-2 font-afacad bg-[#7f85a1] text-white text-center" 
+                onClick={() => {
+                    if (currentUser?.uid) {
+                    sessionStorage.setItem("firebase_uid", currentUser?.uid);
+                    console.log("Setting sessionStorage firebase_uid:", currentUser.uid);
+                    window.open(`/generate-mountain/${anx_id}`, "_blank", "noopener,noreferrer");
+                } else {
+                    console.error("No current user found.");
+                }}}>
+                    Generate Mountain
                 </button>
             </div>
     
@@ -307,7 +304,7 @@ const ViewProgress: React.FC = () => {
                                             <div className="flex gap-">
                                                 <button 
                                                     className="p-2 font-afacad bg-green-500 text-white rounded"
-                                                    onClick={() => handleMarkCompleted(challenge.chall_id)}
+                                                    // onClick={() => handleMarkCompleted(challenge.chall_id)}
                                                 >
                                                     Completed
                                                 </button>
@@ -371,15 +368,6 @@ const ViewProgress: React.FC = () => {
                             
                             {/* Challenge Action Buttons */}
                             <div className="flex justify-center gap-4 mt-4">
-                                
-                                {/*
-                                <button 
-                                    className="p-2 font-afacad bg-blue-500 text-white rounded"
-                                    onClick={handleRegenerateChallenge}
-                                >
-                                    Regenerate
-                                </button>
-                                */}
 
                                 <button 
                                     className="p-2 font-afacad bg-[#7f85a1] text-white rounded"
