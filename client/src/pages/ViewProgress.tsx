@@ -13,6 +13,7 @@ const ViewProgress: React.FC = () => {
         condition_id: number;
         factor_id: number;
         condition_name: string;
+        con_desc: string;
         user_con_rating: { firebase_uid: string; con_id: number; rating: number }[];
     }
     interface Challenge {
@@ -124,7 +125,8 @@ const ViewProgress: React.FC = () => {
             const response = await axios.post(`/api/generate-challenge`, {
                 firebase_uid: currentUser?.uid,
                 anx_id: anx_id,
-                chall_level
+                chall_level,
+                save: false // Don't save the challenge unless the user decides to track it
             });
             console.log('Generated challenge response:', response.data); 
             setCurrentChallengeData(response.data);
@@ -149,15 +151,28 @@ const ViewProgress: React.FC = () => {
     }
 };
 
-    const handleTrackChallenge = () => {
-        if (currentChallengeData) {
-            alert("You are now tracking this challenge!");
+    const handleTrackChallenge = async () => {
+        if (currentChallengeData && currentChallLevel) {
+        try {
+            const response = await axios.post(`/api/generate-challenge`, {
+                firebase_uid: currentUser?.uid,
+                anx_id: anx_id,
+                chall_level: currentChallLevel,
+                challenge: currentChallengeData,
+                save: true 
+            });
 
+            await fetchActiveChallenges();
+            alert("Challenge tracked successfully!");
             setChallengeDescription(null);
             setCurrentChallLevel(null);
             setCurrentChallengeData(null);
+        } catch (error) {
+            console.error("Error tracking challenge:", error);
+            setError("Error tracking challenge. Please try again.");
+        }
     }
-};
+    };
 
     const handleMarkCompleted = async (chall_id: number) => {
         try {
@@ -191,11 +206,15 @@ const ViewProgress: React.FC = () => {
     };
 
     const handleViewChallenges = async () => {
+        if (viewingChallenges) {
+            setViewingChallenges(false);
+        } else {
         setViewingChallenges(true);
         setChallengeDescription(null);
         setCurrentChallLevel(null);
         setCurrentChallengeData(null);
         await fetchActiveChallenges();
+        }
     };
 
     const handleRegenerateChallenge = async () => {
@@ -218,7 +237,7 @@ const ViewProgress: React.FC = () => {
     };
 
     return (
-        <div className="h-screen w-screen bg-amber-50">
+        <div className="min-h-screen w-screen bg-amber-50">
             {/* Display Anxiety Name */}
             {anxiety && ( <h1 className="pt-16 text-6xl text-center text-black font-fast">{anxiety.anx_name}</h1> )}
     
@@ -244,7 +263,7 @@ const ViewProgress: React.FC = () => {
             {/* View Active Challenges Button */}
             <div className="flex justify-center mt-5">
                 <button className="p-2 font-afacad bg-[#7f85a1] text-white text-center" onClick={handleViewChallenges}>
-                    View Active Challenges
+                    {viewingChallenges ? "Hide Active Challenges" : "View Active Challenges"}
                 </button>
             </div>
     
@@ -308,16 +327,11 @@ const ViewProgress: React.FC = () => {
                             ))}
                         </ul>
                     )}
-                    <div className="flex justify-center mt-6">
-                        <button 
-                            className="p-2 font-afacad bg-[#7f85a1] text-white text-center"
-                            onClick={() => setViewingChallenges(false)}>Hide Active Challenges</button>
-                    </div>
                 </div>
             )}
 
             {/* Challenge Generator Section */}
-            {!viewingChallenges && (
+            {!viewingChallenges && !detailsVisible && (
                 <>
             {/* Challenge Buttons */}
             <p className="text-center mt-10 text-black text-lg italic font-afacad">click a button to generate a challenge</p>
