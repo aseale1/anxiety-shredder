@@ -2,13 +2,27 @@ import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
-// import { CHALLENGE_LEVELS, CHALLENGE_COLORS, CHALLENGE_SHAPES } from "../constants/challengeStyles";
 
+interface Anxiety {
+  anx_id: number;
+  anx_name: string;
+}
 interface Challenge {
-  challenge_id: number;
-  challenge_name: string;
   description: string;
   chall_level: string;
+  selectedConditions: {
+    con_id: number;
+    condition_name: string;
+    con_desc?: string;
+    factor_id: number;
+  }[];
+}
+
+interface MaxChallenges {
+    Green: number;
+    Blue: number;
+    Black: number;
+    DoubleBlack: number;
 }
 
 const GenerateMountain: React.FC = () => {
@@ -17,14 +31,29 @@ const GenerateMountain: React.FC = () => {
     const navigate = useNavigate();
     const { currentUser } = useAuth();
     const [anxiety, setAnxiety] = useState<any>(null);
-    const [generatedMountain, setGeneratedMountain] = useState<any>({});
+    const [maxChallenges, setMaxChallenges] = useState<MaxChallenges | null>(null);
+    const [generatedChallenges, setGeneratedChallenges] = useState<Challenge[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const [firebaseUid, setFirebaseUid] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!currentUser) {
-            console.error('User is not logged in');
+        let uid: string | null = null;
+        if (currentUser) {
+            uid = currentUser.uid;
+            console.log('Using currentUser.uid:', uid);
+        } else {
+            uid = sessionStorage.getItem('firebase_uid');
+            console.log('Using sessionStorage firebase.uid:', uid);
         }
+
+        if (!uid) {
+            console.error('User is not authenticated');
+            setLoading(false);
+            return;
+        }
+
+        setFirebaseUid(uid);
 
         if (!anx_id) {
             console.error('anx_id parameter is missing');
@@ -44,50 +73,120 @@ const GenerateMountain: React.FC = () => {
     }, [anx_id, currentUser]);
 
     useEffect(() => {
-        if (anxiety) {
+        if ( firebaseUid && anxiety) {
             const generateFullMountain = async () => {
                 try {
-                    const maxChallsResponse = await axios.post(`/api/generate-max-challenges/${anx_id}`, {
-                        firebase_uid: currentUser,
+                    const maxChallsResponse = await axios.post(`/api/generate-max-challenges`, {
+                        firebase_uid: firebaseUid,
                         anx_id: anxiety.anx_id,
                     });
 
-                    console.log('Full mountain generated:', maxChallsResponse.data);
-                    setGeneratedMountain(maxChallsResponse.data);
+                    setMaxChallenges(maxChallsResponse.data);
+
+                    const challenges: Challenge[] = [];
+
+                    for (const level of Object.keys(maxChallsResponse.data) as Array<keyof MaxChallenges>) {
+                        const maxCount = maxChallsResponse.data[level];
+
+                        if (maxCount > 0) {
+
+                            for (let i = 0; i < maxCount; i++) {
+                                try {
+                                    const challengeResponse = await axios.post(`/api/generate-challenge`, {
+                                        firebase_uid: firebaseUid,
+                                        anx_id: anxiety.anx_id,
+                                        chall_level: level,
+                                    });
+
+                                    challenges.push({
+                                        chall_level: level,
+                                        description: challengeResponse.data.description,
+                                        selectedConditions: challengeResponse.data.selectedConditions,
+                                    });
+                                } catch (error) {
+                                    console.error('Error generating challenge:', error);
+                                }
+                            }
+                        }
+                    }
+                    setGeneratedChallenges(challenges);
+                    setLoading(false);
                 } catch (error) {
                     console.error('Error generating full mountain:', error);
-                    setError('Failed to generate mountain');
+                    setLoading(false);
                 }
             };
-
+            
             generateFullMountain();
         }
-    }, [anxiety, anx_id, currentUser]);
+    }, [anxiety, anx_id, firebaseUid]);
 
     return (
-            <div className="h-screen w-screen bg-amber-50">
-                {anxiety && (
-                    <h1 className="pt-4 text-2xl text-center text-black font-fast">
-                        Your {anxiety.anx_name} Mountain
-                    </h1>
-                )}
-                {Array.isArray(generatedMountain) && generatedMountain.length > 0 ? (
-                    <div className="pl-4 pt-8 text-black font-afacad">
-                        {generatedMountain.map((challenge: Challenge) => (
-                            <div key={challenge.challenge_id}>
-                                <h2 className="text-lg font-bold">{challenge.chall_level}</h2>
-                                <p>{challenge.description}</p>
+   <div className="min-h-screen w-full bg-amber-50 p-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          
+          {anxiety && (
+            <h1 className="text-3xl text-center text-black font-fast flex-grow">
+              Your {anxiety.anx_name} Mountain
+            </h1>
+          )}
+          
+          <div className="w-[100px]"></div>
+        </div>
 
-                            </div>
-                        ))}
-                    </div>
+        {/* Loading state */}
+        {loading && (
+          <div className="text-center py-12">
+            <p className="text-xl text-gray-700">Building your mountain...</p>
+          </div>
+        )}
+
+        {/* Error state */}
+        {error && (
+          <div className="text-center py-8">
+            <p className="text-xl text-red-600">{error}</p>
+          </div>
+        )}
+
+        {/* Mountain visualization */}
+        {!loading && !error && (
+          <div className="rounded-lg bg-white shadow-lg p-6">
+            {maxChallenges && Object.entries(maxChallenges).map(([level, count]) => (
+              <div key={level} className="mb-8">
+                <h2 className={`text-xl text-black font-bold mb-2 ${count > 0 ? '' : 'text-gray-400'}`}>
+                  {level} Level Challenges {count > 0 ? `(${count} possible)` : '(Not available)'}
+                </h2>
+                
+                {count === 0 ? (
+                  <p className="text-gray-500 italic">
+                    You need more rated conditions to generate challenges at this level.
+                  </p>
                 ) : (
-                    <div className="text-center mt-4">
-                        {loading ? "Loading..." : "No challenges generated yet"}
-                    </div>
+                  <div>
+                    {generatedChallenges
+                      .filter(challenge => challenge.chall_level === level)
+                      .map((challenge, index) => (
+                        <div 
+                          key={`${level}-${index}`} 
+                          className="bg-amber-50 p-4 mb-4 rounded shadow"
+                        >
+                          <h3 className="font-semibold text-black mb-2">Challenge {index + 1}</h3>
+                          <p className="whitespace-pre-line text-black">
+                            {challenge.description.split(', ').map(condition => `• ${condition}`).join('\n')}
+                          </p>
+                        </div>
+                      ))}
+                  </div>
                 )}
-            </div>
-        );
-    };
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 export default GenerateMountain;

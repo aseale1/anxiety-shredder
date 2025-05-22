@@ -245,7 +245,15 @@ const ViewProgress: React.FC = () => {
 
             {/* Generate Mountain Button */}
             <div className="flex justify-center mt-5">
-                <button className="p-2 font-afacad bg-[#7f85a1] text-white text-center" onClick={() => window.open(`/generate-mountain/${anx_id}`, "_blank", "noopener,noreferrer")}>
+                <button className="p-2 font-afacad bg-[#7f85a1] text-white text-center" 
+                onClick={() => {
+                    if (currentUser?.uid) {
+                    sessionStorage.setItem("firebase_uid", currentUser?.uid);
+                    console.log("Setting sessionStorage firebase_uid:", currentUser.uid);
+                    window.open(`/generate-mountain/${anx_id}`, "_blank", "noopener,noreferrer");
+                } else {
+                    console.error("No current user found.");
+                }}}>
                     Generate Mountain
                 </button>
             </div>
