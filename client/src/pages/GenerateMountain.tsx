@@ -122,14 +122,14 @@ const GenerateMountain: React.FC = () => {
     }, [anxiety, anx_id, firebaseUid]);
 
     return (
-   <div className="min-h-screen w-full bg-amber-50 p-4">
+   <div className="min-h-screen w-full bg-white p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           
           {anxiety && (
             <h1 className="text-3xl text-center text-black font-fast flex-grow">
-              Your {anxiety.anx_name} Mountain
+              Your "{anxiety.anx_name}" Mountain
             </h1>
           )}
           
@@ -152,7 +152,7 @@ const GenerateMountain: React.FC = () => {
 
         {/* Mountain visualization */}
         {!loading && !error && (
-          <div className="rounded-lg bg-white shadow-lg p-6">
+          <div className="p-6">
             {maxChallenges && Object.entries(maxChallenges).map(([level, count]) => (
               <div key={level} className="mb-8">
                 <h2 className={`text-xl text-black font-bold mb-2 ${count > 0 ? '' : 'text-gray-400'}`}>
@@ -170,7 +170,7 @@ const GenerateMountain: React.FC = () => {
                       .map((challenge, index) => (
                         <div 
                           key={`${level}-${index}`} 
-                          className="bg-amber-50 p-4 mb-4 rounded shadow"
+                          className="p-4 mb-4 border rounded"
                         >
                           <h3 className="font-semibold text-black mb-2">Challenge {index + 1}</h3>
                           <p className="whitespace-pre-line text-black">
