@@ -4,7 +4,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
 import { CHALLENGE_LEVELS, CHALLENGE_COLORS, CHALLENGE_SHAPES } from "../constants/challengeStyles";
 
-
 const ViewProgress: React.FC = () => {
     interface Anxiety {
         anx_name: string;
@@ -83,7 +82,6 @@ const ViewProgress: React.FC = () => {
         fetchAnxietyAndFactors();
     }, [anx_id, currentUser]);
 
-
     const fetchActiveChallenges = async () => {
         try {
             if (currentUser) {
@@ -101,7 +99,6 @@ const ViewProgress: React.FC = () => {
             setError("Error fetching active challenges. Please try again.");
         }
     };
-
 
     const handleDeleteAnxiety = async () => {
         try {

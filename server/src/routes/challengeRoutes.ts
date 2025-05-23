@@ -153,7 +153,6 @@ const generateChallenge: RequestHandler = async (req, res): Promise<void> => {
             chall_level,
             description: challengeDescription,
             selectedConditions,
-            // This is a preview, not saved to database yet
             preview: true
         });
     } catch (err) {
@@ -213,8 +212,6 @@ const getUserChallengesForAnxiety: RequestHandler = async (req, res) => {
     }
   };
 
-
-
 // Update a challenge to mark it as completed
 const completeChallenge: RequestHandler = async (req, res) => {
     const { firebase_uid, chall_id } = req.body;
@@ -230,7 +227,6 @@ const completeChallenge: RequestHandler = async (req, res) => {
       res.status(500).json({ error: "Error completing challenge" });
     }
   };
-
 
 // Delete a challenge
 const deleteChallenge: RequestHandler = async (req, res) => {

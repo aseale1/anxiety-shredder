@@ -9,7 +9,6 @@ interface UserRequestParams {
 }
 // Get all user information
 const getUserInfo: RequestHandler<UserRequestParams> = async (req, res) => {
-  //console.log("getUserHandler activated");
   const { firebase_uid } = req.params;
 
   try {
@@ -54,4 +53,3 @@ userRouter.get('/:firebase_uid', getUserInfo);
 userRouter.post('/new-user', createUser);
 
 export default userRouter;
-

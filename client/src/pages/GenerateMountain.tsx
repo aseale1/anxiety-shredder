@@ -1,12 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
 
-interface Anxiety {
-  anx_id: number;
-  anx_name: string;
-}
 interface Challenge {
   description: string;
   chall_level: string;
@@ -28,7 +24,6 @@ interface MaxChallenges {
 const GenerateMountain: React.FC = () => {
 
     const { anx_id } = useParams();
-    const navigate = useNavigate();
     const { currentUser } = useAuth();
     const [anxiety, setAnxiety] = useState<any>(null);
     const [maxChallenges, setMaxChallenges] = useState<MaxChallenges | null>(null);
@@ -122,7 +117,7 @@ const GenerateMountain: React.FC = () => {
     }, [anxiety, anx_id, firebaseUid]);
 
     return (
-   <div className="min-h-screen w-full bg-white p-4">
+   <div className="min-h-screen w-screen bg-white p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
@@ -132,8 +127,10 @@ const GenerateMountain: React.FC = () => {
               Your "{anxiety.anx_name}" Mountain
             </h1>
           )}
-          
           <div className="w-[100px]"></div>
+        </div>
+        <div className="text-center">
+          <h2 className="mt-4 text-xl italic font-afacad text-black">Below is a list of all possible challenges based on your condition ratings</h2>
         </div>
 
         {/* Loading state */}

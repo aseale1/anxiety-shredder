@@ -2,10 +2,8 @@ import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
-//import { CHALLENGE_LEVELS } from "../constants/challengeStyles";
 
 const AddAnxiety: React.FC = () => {
-
     interface Condition {
         condition_id: number;
         factor_id: number;
