@@ -37,6 +37,17 @@ const ViewProgress: React.FC = () => {
         preview: boolean;
     }
 
+    interface Reminder {
+        reminder_id: number;
+        firebase_uid: string;
+        chall_id: number;
+        frequency: string | null; // 'daily', 'weekly', 'bi-weekly' or null
+        last_sent: Date | null;
+        reminder_enabled: boolean;
+        created_at: Date;
+        updated_at: Date;
+    }
+
     const { anx_id } = useParams();
     const navigate = useNavigate();
     const { currentUser } = useAuth();
@@ -51,6 +62,8 @@ const ViewProgress: React.FC = () => {
     const [viewingChallenges, setViewingChallenges] = useState<boolean>(false);
     const [activeChallenges, setActiveChallenges] = useState<Challenge[]>([]);
     const [currentChallengePreview, setCurrentChallengePreview] = useState<ChallengePreview | null>(null);
+    const [challengeReminders, setChallengeReminders] = useState<{[key: number]: Reminder}>({});
+    const [reminderDropdowns, setReminderDropdowns] = useState<{[key: number]: boolean}>({});
 
     useEffect(() => {
         const fetchAnxietyAndFactors = async () => {
@@ -93,6 +106,22 @@ const ViewProgress: React.FC = () => {
                 });
                 const activeChallenges = response.data.filter((challenge: Challenge) => !challenge.completed);
                 setActiveChallenges(activeChallenges);
+
+                const reminders: {[key: number]: Reminder} = {};
+                for (const challenge of activeChallenges) {
+                    try {
+                        const reminderResponse = await axios.get(`/api/challenge/${challenge.chall_id}/reminder`, {
+                            params: { firebase_uid: currentUser.uid,}
+                        });
+                        if (reminderResponse.data) {
+                            reminders[challenge.chall_id] = reminderResponse.data;
+                        }
+                    } catch (error) {
+                        console.error(`Error fetching reminder for challenge ${challenge.chall_id}:`, error);
+                    }
+                    }
+                setChallengeReminders(reminders);
+
             }
         } catch (error) {
             console.error("Error fetching active challenges:", error);
@@ -184,6 +213,27 @@ const ViewProgress: React.FC = () => {
             }
         }
     };
+
+    const handleCompleteChallenge = async (chall_id: number) => {
+        try {
+            const confirmComplete = window.confirm("Are you sure you want to mark this challenge as completed?");
+            if (confirmComplete) {
+                await axios.put(`/api/complete-challenge`, {
+                    chall_id: chall_id,
+                });
+
+                setActiveChallenges(activeChallenges.filter(challenge => challenge.chall_id !== chall_id));
+
+                const updatedReminders = { ...challengeReminders };
+                delete updatedReminders[chall_id];
+                setChallengeReminders(updatedReminders);
+                alert("Challenge marked as completed!");
+            }
+        } catch (error) {
+            console.error("Error completing challenge:", error);
+            setError("Failed to mark challenge as completed. Please try again.");
+        }
+    };
     const handleDeleteChallenge = async (chall_id: number) => {
         try {
             const confirmDelete = window.confirm("Are you sure you want to delete this challenge?");
@@ -203,6 +253,77 @@ const ViewProgress: React.FC = () => {
         }
     };
 
+    const handleReminderToggle = async (chall_id: number) => {
+        setReminderDropdowns(prev => ({
+            ...prev,
+            [chall_id]: !prev[chall_id]
+        }));
+    };
+
+    const handleSetReminder = async (chall_id: number, frequency: string) => {
+        try {
+            const response = await axios.post(`/api/create-update-reminder`, {
+                firebase_uid: currentUser?.uid,
+                chall_id: chall_id,
+                reminder_enabled: true,
+                frequency: frequency
+            });
+
+            setChallengeReminders(prev => ({
+                ...prev,
+                [chall_id]: response.data
+            }));
+            setReminderDropdowns(prev => ({
+                ...prev,
+                [chall_id]: false // Close the dropdown after setting the reminder
+            }));
+            alert(`Reminder set successfully for ${frequency}!`);
+        } catch (error) {
+            console.error("Error setting reminder:", error);
+            setError("Failed to set reminder. Please try again.");
+        }
+    };
+
+    const handleDisableReminder = async (chall_id: number) => {
+        try {
+            await axios.post(`/api/create-update-reminder`, {
+                firebase_uid: currentUser?.uid,
+                chall_id: chall_id,
+                reminder_enabled: false,
+                frequency: null // Disable the reminder
+            });
+
+            const updatedReminders = { ...challengeReminders };
+            if (updatedReminders[chall_id]) {
+                updatedReminders[chall_id].reminder_enabled = false;
+                updatedReminders[chall_id].frequency = null;
+            }
+            setChallengeReminders(updatedReminders);
+
+            alert("Reminder disabled successfully!");
+        } catch (error) {
+            console.error("Error disabling reminder:", error);
+            setError("Failed to disable reminder. Please try again.");
+        }
+    };
+
+    const handleSendTestReminder = async (chall_id: number) => {
+        try {
+            await axios.post(`/api/send-test-reminder`, {
+                firebase_uid: currentUser?.uid,
+                chall_id: chall_id
+            });
+
+            setReminderDropdowns(prev => ({
+                ...prev,
+                [chall_id]: false // Close the dropdown after sending the test reminder
+            }));
+            alert("Test reminder sent successfully!");
+        } catch (error) {
+            console.error("Error sending test reminder:", error);
+            setError("Failed to send test reminder. Please try again.");
+        }
+    };
     const handleViewChallenges = async () => {
         if (viewingChallenges) {
             setViewingChallenges(false);
@@ -298,13 +419,69 @@ const ViewProgress: React.FC = () => {
                                             <span className="font-semibold text-black text-lg">
                                                 Difficulty Level: {challenge.chall_level.toUpperCase()}
                                             </span>
+                                            {challengeReminders[challenge.chall_id]?.reminder_enabled && (
+                                                <span className="text-sm font-afacad text-gray-600 italic"> 
+                                                    Reminder frequency: {challengeReminders[challenge.chall_id]?.frequency}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex justify-between items-center">
                                             <div className="flex gap-">
                                                 <button 
                                                     className="p-2 font-afacad bg-green-500 text-white rounded"
-                                                    // onClick={() => handleMarkCompleted(challenge.chall_id)}
+                                                    onClick={() => handleCompleteChallenge(challenge.chall_id)}
                                                 >
                                                     Completed
                                                 </button>
+                                                <div className="relative">
+                                                    <button 
+                                                        className="p-2 font-afacad bg-[#7f85a1] text-white rounded"
+                                                        onClick={() => handleReminderToggle(challenge.chall_id)}
+                                                    >
+                                                        {challengeReminders[challenge.chall_id]?.reminder_enabled
+                                                            ? `Reminder: ${challengeReminders[challenge.chall_id]?.frequency}`
+                                                            : `Remind Me`}
+                                                    </button>
+
+                                                    {reminderDropdowns[challenge.chall_id] && (
+                                                        <div className="absolute right-0 mt-2 bg-white border rounded shadow-lg z-10">
+                                                            <div className="py-1">
+                                                                <button
+                                                                    className="block px-4 py-2 text-sm text-white hover:bg-gray-500"
+                                                                    onClick={() => handleSetReminder(challenge.chall_id, "daily")}
+                                                                >
+                                                                    Daily
+                                                                </button>
+                                                                <button
+                                                                    className="block px-4 py-2 text-sm text-white hover:bg-gray-500"
+                                                                    onClick={() => handleSetReminder(challenge.chall_id, "bi-weekly")}
+                                                                >   
+                                                                    Bi-Weekly
+                                                                </button>
+                                                                <button
+                                                                    className="block px-4 py-2 text-sm text-white hover:bg-gray-500"
+                                                                    onClick={() => handleSetReminder(challenge.chall_id, "weekly")}
+                                                                >
+                                                                    Weekly
+                                                                </button>
+                                                                <button
+                                                                    className="block px-4 py-2 text-sm text-white hover:bg-gray-500"
+                                                                    onClick={() => handleSendTestReminder(challenge.chall_id)}
+                                                                >
+                                                                    Send Test Reminder
+                                                                </button>
+                                                                {challengeReminders[challenge.chall_id]?.reminder_enabled && (
+                                                                    <button
+                                                                        className="block px-4 py-2 text-sm text-red-600 hover:bg-red-100"
+                                                                        onClick={() => handleDisableReminder(challenge.chall_id)}
+                                                                    >
+                                                                        Cancel Reminder
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                                 <button 
                                                     className="p-2 font-afacad bg-red-500 text-white rounded"
                                                     onClick={() => handleDeleteChallenge(challenge.chall_id)}

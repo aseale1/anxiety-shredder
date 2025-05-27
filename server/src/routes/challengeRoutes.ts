@@ -1,6 +1,7 @@
 import { Router, Request, Response, RequestHandler } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { create } from 'domain';
+import { parse } from 'path';
 
 const prisma = new PrismaClient();
 const challengeRouter = Router();
@@ -214,12 +215,19 @@ const getUserChallengesForAnxiety: RequestHandler = async (req, res) => {
 
 // Update a challenge to mark it as completed
 const completeChallenge: RequestHandler = async (req, res) => {
-    const { firebase_uid, chall_id } = req.body;
+    const { chall_id } = req.body;
     try {
       const challenge = await prisma.challenges.update({
-        where: { chall_id },
+        where: { chall_id: parseInt(chall_id) },
         data: {
           completed: true,
+        },
+      });
+      //Disable reminders for this challenge
+      await prisma.challenge_reminders.updateMany({
+        where: { chall_id: parseInt(chall_id) },
+        data: {
+          reminder_enabled: false,
         },
       });
       res.status(200).json(challenge);
