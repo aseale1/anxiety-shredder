@@ -1,15 +1,13 @@
-import nodemailer from 'nodemailer';
+import Mailgun from 'mailgun.js';
+import formData from 'form-data';
 
-const createTransporter = () => {
-  return nodemailer.createTransport({
-    service: 'Gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS, // Use an app password if using Gmail
-    },
-    });
-  };
+const mailgun = new Mailgun(formData);
+const mailgunClient = mailgun.client({
+    username: 'api',
+    key: process.env.MAILGUN_API_KEY || '',
+});
 
+const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN || '';
 const emailTemplates = {
     challengeReminder: (userName: string, anxietyName: string, challengeDescription: string, challengeLevel: string) => ({
         subject: 'Anxiety Shredder Challenge Reminder',
@@ -19,7 +17,7 @@ const emailTemplates = {
             <p>This is a reminder to give your ${challengeLevel} challenge for ${anxietyName} a try!</p>
             <p style="font-style: italic;">Challenge Description: ${challengeDescription}</p>
             <p style="color: #666; font-size: 14px; margin-top: 30px;">
-                Please visit the Anxiety Shredder app to adjust your notification settings or to mark this challenge as completed.
+                Please visit the Anxiety Shredder app **INSERT LINK HERE** to adjust your notification settings or to mark this challenge as completed.
         </p>
         </div>
         `,  
@@ -28,19 +26,18 @@ const emailTemplates = {
 
 export const sendEmail = async (to: string, template: any) => {
     try {
-        const transporter = createTransporter();
-        const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to,
+        const messageData = {
+            from: `Anxiety Shredder <no-reply@${MAILGUN_DOMAIN}>`,
+            to: [to],
             subject: template.subject,
             html: template.html,
         };
 
-        const result = await transporter.sendMail(mailOptions);
-        console.log('Email sent: ', result.messageId);
-        return { success: true, messageId: result.messageId };
+        const result = await mailgunClient.messages.create(MAILGUN_DOMAIN, messageData);
+        console.log('Email sent via Mailgun: ', result.id);
+        return { success: true, messageId: result.id};
     } catch (error) {
-        console.error('Error sending email: ', error);
+        console.error('Error sending email via Mailgun: ', error);
         return { success: false, error: error };
     }
 };
@@ -52,6 +49,7 @@ export const sendChallengeReminder = async (
     challengeDescription: string,
     challengeLevel: string
   ) => {
+    console.log('EMAIL SERVICE: Sending challenge reminder email to:', userEmail);
     const template = emailTemplates.challengeReminder(userName, anxietyName, challengeDescription, challengeLevel);
     return await sendEmail(userEmail, template);
   };
