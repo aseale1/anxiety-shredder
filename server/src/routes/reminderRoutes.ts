@@ -194,10 +194,12 @@ const sendTestReminder: RequestHandler = async (req, res): Promise<void> => {
                 anxiety_source: true,
             },
         });
-
+        console.log('Fetching user with uid:', firebase_uid);
         const user = await prisma.users.findUnique({
             where: { firebase_uid },
         });
+
+        console.log('User email:', user?.email);
         if (!challenge || !user) {
             res.status(404).json({ error: 'Challenge or user not found' });
             return;
