@@ -7,6 +7,7 @@ import Testing from './pages/Testing';
 import AddAnxiety from './pages/AddAnxiety';
 import ViewProgress from './pages/ViewProgress';
 import GenerateMountain from './pages/GenerateMountain';
+import CustomAnxiety from './pages/CustomAnxiety.tsx';
 
 const App = () => {
   return (
@@ -20,6 +21,7 @@ const App = () => {
           <Route path="/add-anxiety" element={<AddAnxiety />} />
           <Route path="/view-progress/:anx_id" element={<ViewProgress />} />
           <Route path="/generate-mountain/:anx_id" element={<GenerateMountain />} />
+          <Route path="/custom-anxiety" element={<CustomAnxiety />} />
 
         </Routes>
       </Router>

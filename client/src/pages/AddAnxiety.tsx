@@ -334,6 +334,11 @@ const AddAnxiety: React.FC = () => {
             {/* Return Home */}
             <button onClick={() => navigate("/home")} className="absolute top-0 left-0 mt-2 mb-2 p-2 ml-4 font-afacad text-lg bg-black text-white">Return to Home</button>
 
+            {/* Custom Anxiety */}
+            <div className="flex justify-center mt-4">
+            <button onClick={() => navigate("/custom-anxiety")}  className="font-afacad text-lg bg-black text-white">Create Custom</button>
+            </div>
+            
             {/* Submit */}
             <div className="flex justify-center mt-4">
             <button onClick={handleSubmit} className="font-afacad text-lg bg-black text-white">Submit</button>

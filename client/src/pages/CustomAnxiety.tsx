@@ -1,0 +1,254 @@
+import React, { useEffect, useState } from "react";
+import axios from 'axios';
+import { useNavigate } from "react-router-dom";
+import { useAuth } from '../context/AuthContext';
+
+interface Factor {
+    id: string; //temporary ID for frontend use
+    factor_name: string;
+    conditions: Condition[];
+}
+interface Condition {
+    id: string; //temporary ID for frontend use
+    condition_name: string;
+    con_desc?: string;
+}
+
+const CustomAnxiety: React.FC = () => {
+    const navigate = useNavigate();
+    const { currentUser } = useAuth();
+    const [anxietyName, setAnxietyName] = useState('');
+    const [factors, setFactors] = useState<Factor[]>([]);
+    const [validationErrors, setValidationErrors] = useState<string[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    useEffect(() => {
+        addFactor(); // Initialize 1 empty factor
+    }, []);
+    
+    const generateId = () => Math.random().toString(36).substring(2, 9);
+
+    const addFactor = () => {
+        // if (factors.length >= 10) return;
+        const newFactor: Factor = {
+            id: generateId(),
+            factor_name: '',
+            conditions: [],
+        };
+        setFactors([...factors, newFactor]);
+    };
+
+    const removeFactor = (id: string) => {
+        setFactors(factors.filter(factor => factor.id !== id));
+    };
+
+    const updateFactorName = (id: string, name: string) => {
+        setFactors(factors.map(factor =>
+            factor.id === id ? { ...factor, factor_name: name } : factor
+        ));
+    };
+    const addCondition = (factorId: string) => {
+        setFactors(factors.map(factor => {
+            if (factor.id === factorId) {
+                const newCondition: Condition = {
+                    id: generateId(),
+                    condition_name: '',
+                    con_desc: '',
+                };
+                return { ...factor, conditions: [...factor.conditions, newCondition] };
+            }
+            return factor;
+        }
+        ));
+    };
+
+    const removeCondition = (factorId: string, conditionId: string) => {
+        setFactors(factors.map(factor => 
+            factor.id === factorId 
+                ? { ...factor, conditions: factor.conditions.filter(c => c.id !== conditionId) }
+                : factor
+        ));
+    };
+    const updateCondition = (factorId: string, conditionId: string, field: keyof Condition, value: string) => {
+        setFactors(factors.map(f => 
+            f.id === factorId 
+                ? {
+                    ...f, 
+                    conditions: f.conditions.map(c => 
+                        c.id === conditionId ? { ...c, [field]: value } : c
+                    )
+                }
+                : f
+        ));
+    };
+
+    //TODO: Add validation for empty fields
+
+    const handleSubmit = async () => {
+        if (!currentUser) {
+            console.error("User is not authenticated");
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        try {
+            const requestData = {
+                anx_name: anxietyName.trim(),
+                factors: factors.map(factor => ({
+                    factor_name: factor.factor_name.trim(),
+                    conditions: factor.conditions.map(condition => ({
+                        condition_name: condition.condition_name.trim(),
+                        con_desc: condition.con_desc?.trim() || condition.condition_name.trim()
+                    }))
+                }))
+            };
+
+            const response = await axios.post('/api/create-custom-anxiety', requestData);
+              if (response.status === 201) {
+                console.log('Custom anxiety created successfully');
+                navigate('/add-anxiety'); // Navigate back to add anxiety page
+            }
+        } catch (error) {
+            console.error('Error creating custom anxiety:', error);
+            setValidationErrors(['Failed to create custom anxiety. Please try again.']);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen w-screen bg-mountain bg-center flex justify-center items-center">
+        <div className="absolute inset-0 bg-black opacity-50"></div>
+        <div className="relative w-full max-w-4xl bg-amber-50 rounded-lg p-8 m-4">
+        <h1 className="text-6xl text-black text-center font-fast mb-4 pt-8">Create a Custom Anxiety Source</h1>
+        <div className="border-b-2 border-black mb-6"></div>
+       
+        {/* Anxiety Name */}
+        <div className="mb-4">
+            <label className="block text-black font-afacad text-2xl mb-2">Anxiety Name</label>
+            <input
+                type="text"
+                value={anxietyName}
+                onChange={(e) => setAnxietyName(e.target.value)}
+                placeholder="ex. social events, standardized testing, etc."
+                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            </div> 
+
+        {/* Factors */}
+         <div className="mb-8">
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-3xl text-black font-afacad font-semibold">
+                    Factors ({factors.length}/10)
+                </h2>
+                <button
+                    onClick={addFactor}
+                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+                    disabled={factors.length >= 10}
+                >
+                    Add Factor
+                </button>
+                </div>
+            {factors.map((factor, factorIndex) => (
+                <div key={factor.id} className="mb-6 p-6 rounded-lg bg-white">
+                    <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-2xl text-black font-afacad font-semibold">
+                            Factor {factorIndex + 1}
+                        </h3>
+                        {factors.length > 1 && (
+                            <button
+                                onClick={() => removeFactor(factor.id)}
+                                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                            > 
+                                Remove Factor
+                            </button>
+                        )} 
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-black font-afacad text-xl mb-2">Factor Name</label>
+                        <input
+                            type="text"
+                            value={factor.factor_name}
+                            onChange={(e) => updateFactorName(factor.id, e.target.value)}
+                            placeholder="ex. how many people are there, how long is the event, etc."
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+
+                        <div>
+                            <div className="flex justify-between items-center mb-3">
+                                    <h4 className="text-lg text-black font-afacad font-semibold">
+                                        Conditions ({factor.conditions.length}/10)
+                                    </h4>
+                                    <button
+                                        onClick={() => addCondition(factor.id)}
+                                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+                                        disabled={factor.conditions.length >= 10}
+                                    >
+                                        Add Condition
+                                    </button>
+                                </div>
+                            {factor.conditions.map((condition, conditionIndex) => (
+                                <div key={condition.id} className="mb-6 p-6 rounded-lg bg-white">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <span className="text-lg text-black font-afacad font-semibold">
+                                            Condition {conditionIndex + 1}
+                                        </span>
+                                        <button
+                                            onClick={() => removeCondition(factor.id, condition.id)}
+                                            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                                        >
+                                            Remove Condition
+                                        </button>
+                                        </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-black font-afacad text-xl mb-2">Condition Name</label>
+                                            <input
+                                                type="text"
+                                                value={condition.condition_name}
+                                                onChange={(e) => updateCondition(factor.id, condition.id, 'condition_name', e.target.value)}
+                                                placeholder="ex. less than 10 people, 1 hour long, etc."
+                                                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            />
+                                            </div>
+                                        <div>
+                                            <label className="block text-black font-afacad text-xl mb-2">Condition Description</label>
+                                            <input
+                                                type="text"
+                                                value={condition.con_desc || ''}
+                                                onChange={(e) => updateCondition(factor.id, condition.id, 'con_desc', e.target.value)}
+                                                placeholder="optional description"
+                                                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                            />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex justify-between items-center pt-6 border-t-2 border-gray-300">
+                                <button 
+                                    onClick={() => navigate("/add-anxiety")} 
+                                    className="bg-gray-500 text-white px-6 py-3 rounded-lg font-afacad text-lg hover:bg-gray-600"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleSubmit}
+                                    className={`bg-blue-500 text-white px-6 py-3 rounded-lg font-afacad text-lg hover:bg-blue-600 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting ? 'Submitting...' : 'Submit'}
+                                </button>
+                            </div>
+                            </div>
+                        ))}
+                        </div>
+                    </div>
+                    </div>
+    );
+};
+export default CustomAnxiety;
