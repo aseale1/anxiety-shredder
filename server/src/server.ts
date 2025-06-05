@@ -25,12 +25,12 @@ app.get('/', (req: Request, res: Response) => {
 
 // Routes
 app.use('/api', userRouter);
-app.use('/api', testingRouter);
+//app.use('/api', testingRouter);
 app.use('/api', anxietyRouter);
 app.use('/api', factorRouter);
 app.use('/api', conditionRouter);
 app.use('/api', challengeRouter);
-app.use('/api', reminderRouter);
+//app.use('/api', reminderRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

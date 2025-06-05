@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from 'axios';
 import { useParams } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
+import { mockAnxietySources, mockFactors, mockConditions, generateChallengeDemo } from "../mocks/mockAPIs";
 
 interface Challenge {
   description: string;
@@ -33,31 +34,14 @@ const GenerateMountain: React.FC = () => {
     const [firebaseUid, setFirebaseUid] = useState<string | null>(null);
 
     useEffect(() => {
-        let uid: string | null = null;
-        if (currentUser) {
-            uid = currentUser.uid;
-            console.log('Using currentUser.uid:', uid);
-        } else {
-            uid = sessionStorage.getItem('firebase_uid');
-            console.log('Using sessionStorage firebase.uid:', uid);
-        }
-
-        if (!uid) {
-            console.error('User is not authenticated');
-            setLoading(false);
-            return;
-        }
-
+        const uid = 'demo-user';
         setFirebaseUid(uid);
-
-        if (!anx_id) {
-            console.error('anx_id parameter is missing');
-        }
 
         const fetchAnxiety = async () => {
             try {
-                const response = await axios.get(`/api/anxieties/${anx_id}`);
-                setAnxiety(response.data);
+                const mockAnxieties = await mockAnxietySources();
+                const foundAnxiety = mockAnxieties.find(anx => anx.anx_id.toString() === anx_id);
+                setAnxiety(foundAnxiety);
             } catch (error) {
                 console.error('Error fetching anxiety:', error);
                 setError('Failed to fetch anxiety');
@@ -65,39 +49,40 @@ const GenerateMountain: React.FC = () => {
         };
 
         fetchAnxiety();
-    }, [anx_id, currentUser]);
+    }, [anx_id]);
 
     useEffect(() => {
-        if ( firebaseUid && anxiety) {
+        if (anxiety) {
             const generateFullMountain = async () => {
                 try {
-                    const maxChallsResponse = await axios.post(`/api/generate-max-challenges`, {
-                        firebase_uid: firebaseUid,
-                        anx_id: anxiety.anx_id,
-                    });
+                    const demoData = JSON.parse(sessionStorage.getItem('demo-anxiety') || '{}');
+                    const userRatings = demoData.ratings;
 
-                    setMaxChallenges(maxChallsResponse.data);
+                    const maxChallsResponse = {
+                        Green: userRatings.filter((r: any) => r.rating === 1).length >= 3 ? 2 : 0,
+                        Blue: userRatings.filter((r: any) => r.rating >= 1).length >= 3 ? 2 : 0,
+                        Black: userRatings.filter((r: any) => r.rating >= 2).length >= 2 ? 1 : 0,
+                        DoubleBlack: userRatings.filter((r: any) => r.rating === 3).length >= 1 ? 1 : 0,
+                    };
+
+                    setMaxChallenges(maxChallsResponse);
 
                     const challenges: Challenge[] = [];
+                    const mockConditionsData = await mockConditions();
 
-                    for (const level of Object.keys(maxChallsResponse.data) as Array<keyof MaxChallenges>) {
-                        const maxCount = maxChallsResponse.data[level];
+                    const conditionPool = userRatings.map((rating: any) => ({
+                      condition: mockConditionsData.find(c => c.con_id === rating.con_id),
+                      rating: rating.rating
+                    })).filter((item: any) => item.condition);
+
+                    for (const level of Object.keys(maxChallsResponse) as Array<keyof MaxChallenges>) {
+                        const maxCount = maxChallsResponse[level];
 
                         if (maxCount > 0) {
-
                             for (let i = 0; i < maxCount; i++) {
                                 try {
-                                    const challengeResponse = await axios.post(`/api/generate-challenge`, {
-                                        firebase_uid: firebaseUid,
-                                        anx_id: anxiety.anx_id,
-                                        chall_level: level,
-                                    });
-
-                                    challenges.push({
-                                        chall_level: level,
-                                        description: challengeResponse.data.description,
-                                        selectedConditions: challengeResponse.data.selectedConditions,
-                                    });
+                                    const challengeResponse = await generateChallengeDemo(conditionPool, level);
+                                        challenges.push({ ...challengeResponse, chall_level: challengeResponse.chall_level });
                                 } catch (error) {
                                     console.error('Error generating challenge:', error);
                                 }

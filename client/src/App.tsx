@@ -14,14 +14,19 @@ const App = () => {
     <AuthProvider>
       <Router>
         <Routes>
+          <Route path="/" element={<AddAnxiety />} />
+          <Route path="/generate-mountain/:anx_id" element={<GenerateMountain />} />
+          <Route path="/custom-anxiety" element={<CustomAnxiety />} />
+
+        {/* Unused routes outside of demo scope
           <Route path="/" element={<SignIn />} />
           <Route path="/sign-up" element={<SignUp />} />
           <Route path="/home" element={<Home />} />
           <Route path="/testing" element={<Testing />} />
-          <Route path="/add-anxiety" element={<AddAnxiety />} />
           <Route path="/view-progress/:anx_id" element={<ViewProgress />} />
-          <Route path="/generate-mountain/:anx_id" element={<GenerateMountain />} />
-          <Route path="/custom-anxiety" element={<CustomAnxiety />} />
+
+        */}
+
 
         </Routes>
       </Router>
