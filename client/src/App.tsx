@@ -1,13 +1,16 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import AddAnxiety from './pages/AddAnxiety';
+import GenerateMountain from './pages/GenerateMountain';
+import CustomAnxiety from './pages/CustomAnxiety.tsx';
+
+/*
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp.tsx';
 import Home from './pages/Home';
 import Testing from './pages/Testing';
-import AddAnxiety from './pages/AddAnxiety';
 import ViewProgress from './pages/ViewProgress';
-import GenerateMountain from './pages/GenerateMountain';
-import CustomAnxiety from './pages/CustomAnxiety.tsx';
+*/
 
 const App = () => {
   return (
@@ -26,7 +29,6 @@ const App = () => {
           <Route path="/view-progress/:anx_id" element={<ViewProgress />} />
 
         */}
-
 
         </Routes>
       </Router>

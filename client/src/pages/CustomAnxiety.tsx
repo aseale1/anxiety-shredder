@@ -153,12 +153,13 @@ const CustomAnxiety: React.FC = () => {
         <div className="min-h-screen w-screen bg-mountain bg-center flex justify-center items-center">
         <div className="absolute inset-0 bg-black opacity-50"></div>
         <div className="relative w-full max-w-4xl bg-amber-50 rounded-lg p-8 m-4">
-        <h1 className="text-6xl text-black text-center font-fast mb-4 pt-8">Create a Custom Anxiety Source</h1>
+        <h1 className="text-5xl text-black text-center font-fast mb-4 pt-4">Create a Custom Anxiety Source</h1>
         <div className="border-b-2 border-black mb-6"></div>
        
         {/* Anxiety Name */}
         <div className="mb-4">
-            <label className="block text-black font-afacad text-2xl mb-2">Anxiety Name</label>
+            <h2 className="text-2xl text-black font-afacad font-semibold mb-1">Anxiety Name</h2>
+            
             <input
                 type="text"
                 value={anxietyName}
@@ -171,15 +172,11 @@ const CustomAnxiety: React.FC = () => {
         {/* Factors */}
          <div className="mb-8">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-3xl text-black font-afacad font-semibold">
-                    Factors ({factors.length}/10)
-                </h2>
                 <button
                     onClick={addFactor}
-                    className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
-                    disabled={factors.length >= 10}
+                    className="bg-[#7f85a1] text-white rounded-lg hover:opacity-75"
                 >
-                    Add Factor
+                    Add A Factor
                 </button>
                 </div>
             {factors.map((factor, factorIndex) => (
@@ -193,7 +190,7 @@ const CustomAnxiety: React.FC = () => {
                                 onClick={() => removeFactor(factor.id)}
                                 className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
                             > 
-                                Remove Factor
+                                Remove This Factor
                             </button>
                         )} 
                     </div>
@@ -210,15 +207,12 @@ const CustomAnxiety: React.FC = () => {
 
                         <div>
                             <div className="flex justify-between items-center mb-3">
-                                    <h4 className="text-lg text-black font-afacad font-semibold">
-                                        Conditions ({factor.conditions.length}/10)
-                                    </h4>
+                                    
                                     <button
                                         onClick={() => addCondition(factor.id)}
-                                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
-                                        disabled={factor.conditions.length >= 10}
+                                        className="bg-[#7f85a1] text-white rounded-lg hover:opacity-75"
                                     >
-                                        Add Condition
+                                        Add A Condition
                                     </button>
                                 </div>
                             {factor.conditions.map((condition, conditionIndex) => (
@@ -231,7 +225,7 @@ const CustomAnxiety: React.FC = () => {
                                             onClick={() => removeCondition(factor.id, condition.id)}
                                             className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
                                         >
-                                            Remove Condition
+                                            Remove This Condition
                                         </button>
                                         </div>
                                     <div className="grid grid-cols-2 gap-4">

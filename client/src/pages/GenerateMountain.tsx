@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios, { all } from 'axios';
 import { useParams } from "react-router-dom";
-import { useAuth } from '../context/AuthContext';
 import { mockAnxietySources, mockFactors, mockConditions, generateChallengeDemo } from "../mocks/mockAPIs";
 
 interface Challenge {
