@@ -1,11 +1,44 @@
+interface AnxietySource {
+    anx_id: number;
+    anx_name: string;
+  }
+
+interface Factor {
+    factor_id: number;
+    anx_id: number;
+    factor_name: string;
+}
+
+interface Condition {
+    con_id: number;
+    factor_id: number;
+    condition_name: string;
+    con_desc: string;
+  }
 interface userConditionRating {
     firebase_uid: string;
     con_id: number;
     rating: number;
 }
+interface customAnxietyRequest {
+    anx_name: string;
+    factors: {
+      factor_name: string;
+      conditions: {
+        condition_name: string;
+        con_desc: string;
+      }[];
+    }[];
+}
 
-export const mockAnxietySources = () =>
-    Promise.resolve([
+const CHALLENGE_RULES = {
+    Green: { 1: 3, 2: 0, 3: 0 },
+    Blue: { 1: 2, 2: 1, 3: 0 },
+    Black: { 1: 1, 2: 2, 3: 0 },
+    DoubleBlack: { 1: 0, 2: 2, 3: 1 },
+  };
+
+let anxietyStorage: AnxietySource[] = [
         {anx_id:1,anx_name:"Public Speaking"}, 
         {anx_id:2,anx_name:"Test Taking"}, 
         {anx_id:3,anx_name:"Asking for Help"}, 
@@ -15,11 +48,10 @@ export const mockAnxietySources = () =>
         {anx_id:7,anx_name:"Homework"}, 
         {anx_id:8,anx_name:"Joining a Club/Activity"}, 
         {anx_id:9,anx_name:"Answering Questions in Class"}
-]);
+];
 
-export const mockFactors = () =>
-    Promise.resolve([
-  {factor_id:1,anx_id:1,factor_name:"Audience Size"},
+let factorStorage: Factor[] = [
+        {factor_id:1,anx_id:1,factor_name:"Audience Size"},
         {factor_id:2,anx_id:1,factor_name:"Topic"},
         {factor_id:3,anx_id:1,factor_name:"Importance of the presentation"},
         {factor_id:4,anx_id:1,factor_name:"Length of the presentation"},
@@ -88,10 +120,9 @@ export const mockFactors = () =>
         {factor_id:67,anx_id:9,factor_name:"How many people are in the class"},
         {factor_id:68,anx_id:9,factor_name:"How many questions I have to answer"},
         {factor_id:69,anx_id:9,factor_name:"The type of question"}
-    ]);
+];
 
-export const mockConditions = () =>
-    Promise.resolve([
+let conditionStorage: Condition[] = [
 {con_id:1,factor_id:1,condition_name:"0 people",con_desc:"0 people in the audience"},
         {con_id:2,factor_id:1,condition_name:"1-2 people",con_desc:"1-2 people in the audience"},
         {con_id:3,factor_id:1,condition_name:"3-5 people",con_desc:"3-5 people in the audience"},
@@ -349,21 +380,58 @@ export const mockConditions = () =>
  {con_id:256,factor_id:69,condition_name:"Yes or no/True or false",con_desc:"answer a yes/no or true/false question"}, 
  {con_id:257,factor_id:69,condition_name:"I have to do a calculation",con_desc:"answer by doing a calculation"}, 
  {con_id:268,factor_id:69,condition_name:"Multiple choice",con_desc:"answer a multiple choice question"}
-    ]);
+    ];
 
-const CHALLENGE_RULES = {
-    Green: { 1: 3, 2: 0, 3: 0 },
-    Blue: { 1: 2, 2: 1, 3: 0 },
-    Black: { 1: 1, 2: 2, 3: 0 },
-    DoubleBlack: { 1: 0, 2: 2, 3: 1 },
-  };
+let nextAnxietyId = Math.max(...anxietyStorage.map(a => a.anx_id)) + 1;
+let nextFactorId = Math.max(...factorStorage.map(f => f.factor_id)) + 1;
+let nextConditionId = Math.max(...conditionStorage.map(c => c.con_id)) + 1;
 
-  interface Condition {
-    con_id: number;
-    factor_id: number;
-    condition_name: string;
-    con_desc: string;
-  }
+export const mockAnxietySources = () => Promise.resolve([...anxietyStorage]);
+export const mockFactors = () => Promise.resolve([...factorStorage]);
+export const mockConditions = () => Promise.resolve([...conditionStorage]);
+
+export const mockCreateCustomAnxiety = (requestData: customAnxietyRequest) => {
+    return new Promise((resolve, reject) => {
+        try {
+        const {anx_name, factors} = requestData;
+
+        const newCustomAnx: AnxietySource = {
+            anx_id: nextAnxietyId++,
+            anx_name: anx_name.trim()
+        };
+        anxietyStorage.push(newCustomAnx);
+
+        factors.forEach(factorData => {
+            if (!factorData.factor_name.trim()) {
+                throw new Error("Factor name cannot be empty");
+                }
+            const newFactor: Factor = {
+                factor_id: nextFactorId++,
+                factor_name: factorData.factor_name.trim(),
+                anx_id: newCustomAnx.anx_id
+            };
+            factorStorage.push(newFactor);
+
+            factorData.conditions.forEach(conditionData => {
+                if (!conditionData.condition_name.trim()) {
+                    throw new Error("Condition name cannot be empty");
+                }
+                const newCondition: Condition = {
+                    con_id: nextConditionId++,
+                    factor_id: newFactor.factor_id,
+                    condition_name: conditionData.condition_name.trim(),
+                    con_desc: conditionData.con_desc?.trim() || conditionData.condition_name.trim()
+                };
+                conditionStorage.push(newCondition);
+            });
+        });
+        resolve({ status: 201, message: "Custom anxiety source created successfully", data: newCustomAnx });
+    } catch (error) {
+        reject({ status: 500, message:'Error creating custom anxiety source', error: error });
+    }
+    });
+}
+
 
   export const generateChallengeDemo = (
     conditionPool: { condition: Condition; rating: number }[],

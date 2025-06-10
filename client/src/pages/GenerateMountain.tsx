@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from 'axios';
+import axios, { all } from 'axios';
 import { useParams } from "react-router-dom";
 import { useAuth } from '../context/AuthContext';
 import { mockAnxietySources, mockFactors, mockConditions, generateChallengeDemo } from "../mocks/mockAPIs";
@@ -22,11 +22,32 @@ interface MaxChallenges {
     DoubleBlack: number;
 }
 
+interface Condition {
+  con_id: number;
+  condition_name: string;
+  con_desc?: string;
+  [key: string]: any;
+}
+
+interface CustomAnxiety {
+  anxiety: {
+    anx_id: number;
+    anx_name: string;
+  };
+  factors: any[];
+  conditions: any[];
+}
+
+interface AnxietySource {
+  anx_id: number;
+  anx_name: string;
+}
+
 const GenerateMountain: React.FC = () => {
 
     const { anx_id } = useParams();
-    const { currentUser } = useAuth();
-    const [anxiety, setAnxiety] = useState<any>(null);
+    const demoUser = { uid: 'demo-user' };
+    const [anxiety, setAnxiety] = useState<AnxietySource | null>(null);
     const [maxChallenges, setMaxChallenges] = useState<MaxChallenges | null>(null);
     const [generatedChallenges, setGeneratedChallenges] = useState<Challenge[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -38,10 +59,30 @@ const GenerateMountain: React.FC = () => {
         setFirebaseUid(uid);
 
         const fetchAnxiety = async () => {
+          if (!anx_id) {
+            setError('anx_id is undefined');
+            return;
+          }
             try {
+              const customData = sessionStorage.getItem('custom-anxiety');
+              if (customData) {
+                const customAnxieties = JSON.parse(customData);
+                const customAnxiety = customAnxieties.find((anx: CustomAnxiety) => 
+                  anx.anxiety && anx.anxiety.anx_id.toString() === anx_id.toString());
+                if (customAnxiety) {
+                    setAnxiety(customAnxiety.anxiety);
+                    return;
+                }
+              }
                 const mockAnxieties = await mockAnxietySources();
-                const foundAnxiety = mockAnxieties.find(anx => anx.anx_id.toString() === anx_id);
-                setAnxiety(foundAnxiety);
+                const foundAnxiety = mockAnxieties.find((anx: AnxietySource) =>
+                  anx.anx_id && anx.anx_id.toString() === anx_id.toString());
+                  
+                if (foundAnxiety) {
+                  setAnxiety(foundAnxiety);
+                } else {
+                  setError('Anxiety not found');
+                }
             } catch (error) {
                 console.error('Error fetching anxiety:', error);
                 setError('Failed to fetch anxiety');
@@ -56,7 +97,7 @@ const GenerateMountain: React.FC = () => {
             const generateFullMountain = async () => {
                 try {
                     const demoData = JSON.parse(sessionStorage.getItem('demo-anxiety') || '{}');
-                    const userRatings = demoData.ratings;
+                    const userRatings = demoData.ratings || demoData.conditions || [];
 
                     const maxChallsResponse = {
                         Green: userRatings.filter((r: any) => r.rating === 1).length >= 3 ? 2 : 0,
@@ -68,12 +109,17 @@ const GenerateMountain: React.FC = () => {
                     setMaxChallenges(maxChallsResponse);
 
                     const challenges: Challenge[] = [];
-                    const mockConditionsData = await mockConditions();
+                    const allConditions = await getAllConditions();
 
-                    const conditionPool = userRatings.map((rating: any) => ({
-                      condition: mockConditionsData.find(c => c.con_id === rating.con_id),
-                      rating: rating.rating
-                    })).filter((item: any) => item.condition);
+                    const conditionPool = userRatings
+                        .filter((rating: any) => rating.rating > 0) // Only include rated conditions
+                        .map((rating: any) => ({
+                            condition: allConditions.find(c => c.con_id === rating.con_id),
+                            rating: rating.rating
+                        }))
+                        .filter((item: any) => item.condition);
+
+                        console.log('Condition Pool:', conditionPool);
 
                     for (const level of Object.keys(maxChallsResponse) as Array<keyof MaxChallenges>) {
                         const maxCount = maxChallsResponse[level];
@@ -100,6 +146,23 @@ const GenerateMountain: React.FC = () => {
             generateFullMountain();
         }
     }, [anxiety, anx_id, firebaseUid]);
+
+    const getAllConditions = async (): Promise<Condition[]> => {
+      try {
+        const mockConditionsData = await mockConditions();
+        const demoData = JSON.parse(sessionStorage.getItem('demo-anxiety') || '{}');
+
+        if (demoData.isCustom || demoData.conditions) {
+          const customConditions: Condition[] = demoData.conditions || [];
+          console.log('Using Custom Conditions:', customConditions);
+          return [...mockConditionsData, ...customConditions];
+        }
+        return mockConditionsData;
+      } catch (error) {
+        console.error('Error fetching conditions:', error);
+        return await mockConditions();
+      }
+    };
 
     return (
    <div className="min-h-screen w-screen bg-white p-4">

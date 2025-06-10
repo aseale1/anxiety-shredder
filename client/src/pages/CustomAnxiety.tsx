@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from 'axios';
-import { useNavigate } from "react-router-dom";
-import { useAuth } from '../context/AuthContext';
+import { useNavigate, useLocation } from "react-router-dom";
 
 interface Factor {
     id: string; //temporary ID for frontend use
@@ -16,7 +15,7 @@ interface Condition {
 
 const CustomAnxiety: React.FC = () => {
     const navigate = useNavigate();
-    const { currentUser } = useAuth();
+    const demoUser = { uid: 'demo-user' };
     const [anxietyName, setAnxietyName] = useState('');
     const [factors, setFactors] = useState<Factor[]>([]);
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -84,31 +83,64 @@ const CustomAnxiety: React.FC = () => {
 
     //TODO: Add validation for empty fields
 
+    const location = useLocation();
     const handleSubmit = async () => {
-        if (!currentUser) {
-            console.error("User is not authenticated");
-            return;
-        }
-
         setIsSubmitting(true);
 
         try {
-            const requestData = {
-                anx_name: anxietyName.trim(),
-                factors: factors.map(factor => ({
-                    factor_name: factor.factor_name.trim(),
-                    conditions: factor.conditions.map(condition => ({
-                        condition_name: condition.condition_name.trim(),
-                        con_desc: condition.con_desc?.trim() || condition.condition_name.trim()
-                    }))
-                }))
+            const existingCustomData = JSON.parse(sessionStorage.getItem('custom-anxiety') || '[]');
+            const newAnxietyId = existingCustomData.length + 100;
+            let currentFactorId = 999;
+            let currentConditionId = 9999;
+
+            const customAnxiety = {
+                anx_id: newAnxietyId,
+                anx_name: anxietyName
             };
 
-            const response = await axios.post('/api/create-custom-anxiety', requestData);
-              if (response.status === 201) {
-                console.log('Custom anxiety created successfully');
-                navigate('/add-anxiety'); // Navigate back to add anxiety page
-            }
+            const customFactors = factors.map(factor => {
+                const factorId = currentFactorId++;
+                return {
+                    factor_id: factorId,
+                    anx_id: newAnxietyId,
+                    factor_name: factor.factor_name,
+                    conditions: factor.conditions.map(condition => ({
+                        con_id: currentConditionId++,
+                        factor_id: factorId,
+                        condition_name: condition.condition_name,
+                        con_desc: condition.con_desc || condition.condition_name
+                    }))
+                };
+            });
+            const customConditions = customFactors.flatMap(factor => factor.conditions);
+            const newCustomData = {
+                anxiety: customAnxiety,
+                factors: customFactors.map(factor => ({
+                    factor_id: factor.factor_id,
+                    anx_id: factor.anx_id,
+                    factor_name: factor.factor_name
+                })),
+                conditions: customConditions.map(condition => ({
+                    con_id: condition.con_id,
+                    factor_id: condition.factor_id,
+                    condition_name: condition.condition_name,
+                    con_desc: condition.con_desc
+                }))
+            };
+            existingCustomData.push(newCustomData);
+            sessionStorage.setItem('custom-anxiety', JSON.stringify(existingCustomData));
+            sessionStorage.setItem('current-custom-anxiety', JSON.stringify({
+                anxiety: customAnxiety,
+                factors: customFactors.map(factor => ({
+                    factor_id: factor.factor_id,
+                    anx_id: factor.anx_id,
+                    factor_name: factor.factor_name
+                })),
+                conditions: customConditions
+            }));
+            console.log('Custom anxiety created successfully:', newCustomData);
+            navigate('/', { state: { customAnxietyId: newAnxietyId } }); // Navigate back to add anxiety page
+
         } catch (error) {
             console.error('Error creating custom anxiety:', error);
             setValidationErrors(['Failed to create custom anxiety. Please try again.']);
@@ -231,7 +263,7 @@ const CustomAnxiety: React.FC = () => {
                             {/* Action Buttons */}
                             <div className="flex justify-between items-center pt-6 border-t-2 border-gray-300">
                                 <button 
-                                    onClick={() => navigate("/add-anxiety")} 
+                                    onClick={() => navigate("/")} 
                                     className="bg-gray-500 text-white px-6 py-3 rounded-lg font-afacad text-lg hover:bg-gray-600"
                                 >
                                     Cancel
