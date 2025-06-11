@@ -62,8 +62,8 @@ const customAnxiety: RequestHandler = async (req, res) => {
 
   try {
 
-    const existingAnxiety = await prisma.anxiety_source.findUnique({
-      where: { anx_name: anx_name.trim() }
+    const existingAnxiety = await prisma.anxiety_source.findFirst({
+      where: { anx_name: { equals: anx_name.trim() } }
     });
 
     if (existingAnxiety) {

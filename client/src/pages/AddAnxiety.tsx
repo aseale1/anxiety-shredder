@@ -8,6 +8,7 @@ const AddAnxiety: React.FC = () => {
         condition_id: number;
         factor_id: number;
         condition_name: string;
+        con_desc: string;
         user_con_rating: { firebase_uid: string; con_id: number; rating: number }[];
     }
 
@@ -300,7 +301,7 @@ const AddAnxiety: React.FC = () => {
             {conditions.map((condition, index) => (
                 <div key={`${condition.condition_id}-${index}`} className="mb-4 text-center">
                     <label className="block text-black text-xl text-bold font-afacad">
-                        {condition.condition_name}
+                        {condition.con_desc || condition.condition_name}
                     </label>
                     {[0, 1, 2, 3].map((rating) => (
                         <label key={rating} className="inline-block mr-4 text-black font-afacad text-lg">
@@ -336,7 +337,7 @@ const AddAnxiety: React.FC = () => {
 
             {/* Custom Anxiety */}
             <div className="flex justify-center mt-4">
-            <button onClick={() => navigate("/custom-anxiety")}  className="font-afacad text-lg bg-black text-white">Create Custom</button>
+            <button onClick={() => navigate("/custom-anxiety")}  className="font-afacad text-lg bg-black text-white">Create A Custom Anxiety Source</button>
             </div>
             
             {/* Submit */}

@@ -9,10 +9,15 @@ datasource db {
 
 model anxiety_source {
   anx_id     Int          @id @default(autoincrement())
-  anx_name   String       @unique @db.VarChar(255)
+  anx_name   String       @db.VarChar(255)
+  created_by String?      @db.VarChar(255)
+  is_system  Boolean      @default(true)
+  users      users?       @relation(fields: [created_by], references: [firebase_uid])
   challenges challenges[]
   factor     factor[]
   user_anx   user_anx[]
+
+  @@unique([anx_name, created_by])
 }
 
 model chall_conditions {
@@ -25,31 +30,30 @@ model chall_conditions {
 }
 
 model challenges {
-  chall_id         Int                @id @default(autoincrement())
-  firebase_uid     String?            @db.VarChar(255)
-  anx_id           Int?
-  chall_level      String?            @db.VarChar(255)
-  completed        Boolean?           @default(false)
-  description      String?            @db.VarChar
-  chall_conditions chall_conditions[]
-  anxiety_source   anxiety_source?    @relation(fields: [anx_id], references: [anx_id], onDelete: Cascade, onUpdate: NoAction)
-  users            users?             @relation(fields: [firebase_uid], references: [firebase_uid], onDelete: Cascade, onUpdate: NoAction)
+  chall_id            Int                   @id @default(autoincrement())
+  firebase_uid        String?               @db.VarChar(255)
+  anx_id              Int?
+  chall_level         String?               @db.VarChar(255)
+  completed           Boolean?              @default(false)
+  description         String?               @db.VarChar
+  chall_conditions    chall_conditions[]
   challenge_reminders challenge_reminders[]
+  anxiety_source      anxiety_source?       @relation(fields: [anx_id], references: [anx_id], onDelete: Cascade, onUpdate: NoAction)
+  users               users?                @relation(fields: [firebase_uid], references: [firebase_uid], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model challenge_reminders {
-  reminder_id      Int                @id @default(autoincrement())
+  reminder_id      Int        @id @default(autoincrement())
   chall_id         Int
-  firebase_uid     String             @db.VarChar(255)
-  reminder_enabled  Boolean           @default(false)
-  frequency        String?            @db.VarChar(255)
+  firebase_uid     String     @db.VarChar(255)
+  reminder_enabled Boolean    @default(false)
+  frequency        String?    @db.VarChar(255)
   last_sent        DateTime?
-  created_at       DateTime           @default(now())
-  updated_at       DateTime           @updatedAt
+  created_at       DateTime   @default(now())
+  updated_at       DateTime   @updatedAt
+  challenge        challenges @relation(fields: [chall_id], references: [chall_id], onDelete: Cascade, onUpdate: NoAction)
+  user             users      @relation(fields: [firebase_uid], references: [firebase_uid], onDelete: Cascade, onUpdate: NoAction)
 
-  challenge      challenges @relation(fields: [chall_id], references: [chall_id], onDelete: Cascade, onUpdate: NoAction)
-  user           users     @relation(fields: [firebase_uid], references: [firebase_uid], onDelete: Cascade, onUpdate: NoAction)
-  
   @@unique([chall_id, firebase_uid])
 }
 
@@ -101,12 +105,13 @@ model user_factor {
 }
 
 model users {
-  firebase_uid    String            @id @db.VarChar(255)
-  email           String            @unique @db.VarChar(255)
-  first_name      String?           @db.VarChar(255)
-  challenges      challenges[]
-  user_anx        user_anx[]
-  user_con_rating user_con_rating[]
-  user_factor     user_factor[]
+  firebase_uid        String                @id @db.VarChar(255)
+  email               String                @unique @db.VarChar(255)
+  first_name          String?               @db.VarChar(255)
+  anxiety_source      anxiety_source[]
   challenge_reminders challenge_reminders[]
+  challenges          challenges[]
+  user_anx            user_anx[]
+  user_con_rating     user_con_rating[]
+  user_factor         user_factor[]
 }
