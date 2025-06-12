@@ -164,6 +164,8 @@ const generateChallenge: RequestHandler = async (req, res): Promise<void> => {
 
 // Save a challenge to the database
 const saveChallenge: RequestHandler = async (req, res): Promise<void> => {
+    console.log('saveChallenge called');
+    console.log('req.body:', req.body);
     const { 
         firebase_uid, 
         anx_id, 
@@ -189,7 +191,7 @@ const saveChallenge: RequestHandler = async (req, res): Promise<void> => {
             },
         });
 
-        //res.status(201).json(challenge);
+        res.status(201).json(challenge);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Error saving challenge" });
@@ -207,7 +209,7 @@ const getUserChallengesForAnxiety: RequestHandler = async (req, res) => {
           anx_id: parseInt(anx_id as string),
         },
       });
-      //res.status(200).json(challenges);
+      res.status(200).json(challenges);
     } catch (err) {
       res.status(500).json({ error: "Error fetching user's challenges" });
     }
@@ -230,7 +232,7 @@ const completeChallenge: RequestHandler = async (req, res) => {
           reminder_enabled: false,
         },
       });
-      //res.status(200).json(challenge);
+      res.status(200).json(challenge);
     } catch (err) {
       res.status(500).json({ error: "Error completing challenge" });
     }
@@ -243,7 +245,7 @@ const deleteChallenge: RequestHandler = async (req, res) => {
       const challenge = await prisma.challenges.delete({
         where: { chall_id },
       });
-      //res.status(200).json(challenge);
+      res.status(200).json(challenge);
     } catch (err) {
       res.status(500).json({ error: "Error deleting challenge" });
     }
@@ -311,7 +313,7 @@ const generateMaxChallenges: RequestHandler = async (req, res) => {
           maxChallenges[level] = maxPossible;
         });
 
-        //res.status(200).json(maxChallenges);
+        res.status(200).json(maxChallenges);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: "Error generating max challenges" });

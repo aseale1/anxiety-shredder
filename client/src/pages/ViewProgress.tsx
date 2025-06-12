@@ -190,6 +190,7 @@ const ViewProgress: React.FC = () => {
 };
 
     const handleTrackChallenge = async () => {
+        console.log('Tracking challenge:', currentChallengePreview);
         if (currentChallengePreview) {
             try {
                 const response = await axios.post(`/api/save-challenge`, {
