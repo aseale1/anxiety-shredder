@@ -95,6 +95,7 @@ const CustomAnxiety: React.FC = () => {
         try {
             const requestData = {
                 anx_name: anxietyName.trim(),
+                firebase_uid: currentUser.uid,
                 factors: factors.map(factor => ({
                     factor_name: factor.factor_name.trim(),
                     conditions: factor.conditions.map(condition => ({

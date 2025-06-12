@@ -58,12 +58,15 @@ const createUser: RequestHandler = async (req, res) => {
 
 // Custom anxiety source creation
 const customAnxiety: RequestHandler = async (req, res) => {
-  const {anx_name, factors}: CustomAnxietyRequest = req.body;
+  const {anx_name, factors, firebase_uid }: CustomAnxietyRequest & { firebase_uid: string} = req.body;
 
   try {
 
     const existingAnxiety = await prisma.anxiety_source.findFirst({
-      where: { anx_name: { equals: anx_name.trim() } }
+      where: { 
+        anx_name: anx_name.trim(),
+        created_by: firebase_uid
+      }
     });
 
     if (existingAnxiety) {
@@ -77,6 +80,8 @@ const customAnxiety: RequestHandler = async (req, res) => {
     const anxietySource = await prisma.anxiety_source.create({
       data: {
         anx_name: anx_name,
+        is_system: false,
+        created_by: firebase_uid,
       },
     });
     console.log('Created anxiety source:', anxietySource);

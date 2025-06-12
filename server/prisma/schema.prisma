@@ -10,12 +10,13 @@ datasource db {
 model anxiety_source {
   anx_id     Int          @id @default(autoincrement())
   anx_name   String       @db.VarChar(255)
+  is_system  Boolean      @default(false)
   created_by String?      @db.VarChar(255)
-  is_system  Boolean      @default(true)
-  users      users?       @relation(fields: [created_by], references: [firebase_uid])
   challenges challenges[]
   factor     factor[]
   user_anx   user_anx[]
+
+  creator    users?       @relation("CustomAnxietySources", fields: [created_by], references: [firebase_uid])
 
   @@unique([anx_name, created_by])
 }
@@ -110,8 +111,5 @@ model users {
   first_name          String?               @db.VarChar(255)
   anxiety_source      anxiety_source[]
   challenge_reminders challenge_reminders[]
-  challenges          challenges[]
-  user_anx            user_anx[]
-  user_con_rating     user_con_rating[]
-  user_factor         user_factor[]
+  custom_anxieties anxiety_source[]  @relation("CustomAnxietySources")
 }

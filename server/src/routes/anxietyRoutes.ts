@@ -85,20 +85,37 @@ const addUserAnxiety: RequestHandler = async (req, res) => {
       try {
         const untrackedAnxieties = await prisma.anxiety_source.findMany({
           where: {
-            NOT: {
-              user_anx: {
-                some: {
-                  firebase_uid,
-                },
-              },
-            },
+        AND: [
+          // Either system anxiety sources OR user's custom ones
+          {
+            OR: [
+              { is_system: true },
+              { created_by: firebase_uid }
+            ]
           },
-        });
-        res.status(200).json(untrackedAnxieties);
-      } catch (err) {
-        res.status(500).json({ error: "Error fetching untracked anxieties" });
+          // Not already tracked by this user
+          {
+            user_anx: {
+              none: {
+                firebase_uid: firebase_uid
+              }
+            }
+          }
+        ]
+      },
+      select: {
+        anx_id: true,
+        anx_name: true,
+        is_system: true
       }
-    };
+    });
+
+    res.json(untrackedAnxieties);
+  } catch (error) {
+    console.error("Error fetching untracked anxieties:", error);
+    res.status(500).json({ error: 'Failed to fetch anxieties' });
+  }
+};
 
 // Delete an anxiety from a user as well as the factors and conditions associated with it
 const deleteAnxiety: RequestHandler<{ firebase_uid: string, anx_id: string }> = async (req, res) => {
