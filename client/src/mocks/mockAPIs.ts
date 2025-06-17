@@ -436,6 +436,7 @@ export const mockCreateCustomAnxiety = (requestData: customAnxietyRequest) => {
   export const generateChallengeDemo = (
     conditionPool: { condition: Condition; rating: number }[],
     challLevel: keyof typeof CHALLENGE_RULES,
+    usedConditionCombos: Set<string> = new Set() // Prevents duplicate challenges
   ) => {
     const required = CHALLENGE_RULES[challLevel];
     const byRating: Record<number, Condition[]> = {1: [], 2: [], 3: []};
@@ -445,8 +446,14 @@ export const mockCreateCustomAnxiety = (requestData: customAnxietyRequest) => {
             byRating[rating].push(condition);
         }
     }
+
+    const maxAttempts = 50; // Limit attempts to prevent infinite loops
+    let attempts = 0;
+
+    while (attempts < maxAttempts) {
     const selectedConditions: Condition[] = [];
     const usedFactors = new Set<number>();
+
     for (const rating of [1, 2, 3]) {
         const requiredCount = required[rating as 1 | 2 | 3];
         const available = [...(byRating[rating] || [])].sort(() => 0.5 - Math.random());
@@ -463,7 +470,10 @@ export const mockCreateCustomAnxiety = (requestData: customAnxietyRequest) => {
 
         // Allow factors to be reused if not enough unique conditions are available
         if (count < requiredCount) {
-            const extra = available.filter(c => !selectedConditions.includes(c)).slice(0, requiredCount - count);
+            const extra = available
+            .filter(c => !selectedConditions.includes(c))
+            .sort(() => 0.5 - Math.random())
+            .slice(0, requiredCount - count);
       selectedConditions.push(...extra);
     }
   }
@@ -472,16 +482,26 @@ export const mockCreateCustomAnxiety = (requestData: customAnxietyRequest) => {
     throw new Error("Not enough conditions to generate challenge");
   }
 
-  const description = selectedConditions.map(c => c.con_desc || c.condition_name).join(", ");
+  const conditionComboSignature = selectedConditions.map(c => c.con_id).sort().join("-");
+  
+  if (!usedConditionCombos.has(conditionComboSignature)) {
+    usedConditionCombos.add(conditionComboSignature);
+
+  const finalShuffled = [...selectedConditions.sort(() => 0.5 - Math.random()),]
+  const description = finalShuffled.map(c => c.con_desc || c.condition_name).join(", ");
 
   return Promise.resolve({
     chall_level: challLevel,
     description,
-    selectedConditions: selectedConditions.map(c => ({
+    selectedConditions: finalShuffled.map(c => ({
         con_id: c.con_id,
         condition_name: c.condition_name,
         con_desc: c.con_desc,
         factor_id: c.factor_id,
     })),
+    conditionComboSignature
     });
-  };
+    }    
+    attempts++;
+    }
+};

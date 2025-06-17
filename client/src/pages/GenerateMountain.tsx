@@ -108,6 +108,7 @@ const GenerateMountain: React.FC = () => {
 
                     const challenges: Challenge[] = [];
                     const allConditions = await getAllConditions();
+                    const usedConditionCombos = new Set<string>();
 
                     const conditionPool = userRatings
                         .filter((rating: any) => rating.rating > 0) // Only include rated conditions
@@ -125,9 +126,19 @@ const GenerateMountain: React.FC = () => {
                         if (maxCount > 0) {
                             for (let i = 0; i < maxCount; i++) {
                                 try {
-                                    const challengeResponse = await generateChallengeDemo(conditionPool, level);
-                                        challenges.push({ ...challengeResponse, chall_level: challengeResponse.chall_level });
-                                } catch (error) {
+                                    const challengeResponse = await generateChallengeDemo(conditionPool, level, usedConditionCombos);
+                                    if (
+                                      challengeResponse &&
+                                      typeof challengeResponse.description === "string" &&
+                                      challengeResponse.selectedConditions
+                                    ) {
+                                      challenges.push({
+                                        description: challengeResponse.description,
+                                        chall_level: challengeResponse.chall_level,
+                                        selectedConditions: challengeResponse.selectedConditions,
+                                      });
+                                    }
+                                  } catch (error) {
                                     console.error('Error generating challenge:', error);
                                 }
                             }
