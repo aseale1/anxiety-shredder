@@ -74,11 +74,6 @@ const Home = () => {
         <p className="text-center text-black font-afacad">Loading...</p>
       ) : userData ? (
         <div className="text-center">
-
-          {/*
-          <p className="text-black font-afacad">Email: {userData.email}</p>
-          <p className="text-black font-afacad">Name: {userData.first_name}</p>
-          */}
   
           <h2 className="mt-4 text-2xl font-semibold font-afacad text-black">You are working on:</h2>
           {Array.isArray(anxieties) && anxieties.length > 0 ? (
@@ -96,10 +91,18 @@ const Home = () => {
           )}
           <p className="text-center mt-2 text-black italic font-afacad">select an anxiety source to view your progress</p>
           <button onClick={() => navigate("/add-anxiety")} className="bg-black-500 font-afacad text-lg text-white p-2 mt-10">+ Add an Anxiety Source</button>
+          {/* Profile Page*/}
+          <button 
+              onClick={() => navigate("/profile")} 
+              className="absolute bottom-2 right-10 mt-2 p-2 ml-4 font-afacad text-lg bg-[#7f85a1] text-white"
+          >
+              View Profile
+          </button>
         </div>
       ) : (
         <p className="text-center text-black font-afacad">No user data available.</p>
       )}
+      
     </div>
     </div>
   </div>
