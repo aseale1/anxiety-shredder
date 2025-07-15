@@ -7,7 +7,7 @@ import AddAnxiety from './pages/AddAnxiety';
 import ViewProgress from './pages/ViewProgress';
 import GenerateMountain from './pages/GenerateMountain';
 import CustomAnxiety from './pages/CustomAnxiety.tsx';
-
+import Profile from './pages/Profile.tsx';
 const App = () => {
   return (
     <AuthProvider>
@@ -20,6 +20,7 @@ const App = () => {
           <Route path="/view-progress/:anx_id" element={<ViewProgress />} />
           <Route path="/generate-mountain/:anx_id" element={<GenerateMountain />} />
           <Route path="/custom-anxiety" element={<CustomAnxiety />} />
+          <Route path="/profile" element={<Profile />} />
 
         </Routes>
       </Router>
