@@ -20,6 +20,13 @@ const Profile = () => {
     return response.data;
   };
 
+  const updateProfile = async (uid: string, email: string, first_name: string) => {
+    const response = await axios.put(`/api/${uid}/edit-profile`, { email, first_name });
+    const updateduserData = response.data;
+    setUserData(updateduserData);
+    return response.data;
+  };
+
   useEffect(() => {
     if (currentUser) {
       const fetchData = async () => {
@@ -58,8 +65,31 @@ const Profile = () => {
       ) : userData ? (
         <div className="text-center">
           <p className="text-black text-xl font-afacad">Email: {userData.email}</p>
+          <button 
+           className="p-2 font-afacad bg-red-500 text-white rounded"
+           onClick={() => {
+            const newEmail = prompt("Enter your new email address:");
+            if (newEmail && currentUser) {
+              updateProfile(currentUser.uid, newEmail, userData.first_name);
+            }
+           }}
+           >
+          Change Email Address
+           </button>
           <p className="text-black text-xl font-afacad">Name: {userData.first_name}</p>
+          <button 
+           className="p-2 font-afacad bg-red-500 text-white rounded"
+           onClick={() => {
+            const newName = prompt("Enter your new name:");
+            if (newName && currentUser) {
+              updateProfile(currentUser.uid, userData.email, newName);
+            }
+           }}
+           >
+          Change Name
+           </button>
         </div>
+        
       ) : (
         <p className="text-center text-black font-afacad">No user data available.</p>
       )}

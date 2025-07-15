@@ -94,7 +94,7 @@ const Home = () => {
           {/* Profile Page*/}
           <button 
               onClick={() => navigate("/profile")} 
-              className="absolute bottom-2 right-10 mt-2 p-2 ml-4 font-afacad text-lg bg-[#7f85a1] text-white"
+              className="flex bottom-2 right-10 mt-2 p-2 ml-4 font-afacad text-lg bg-[#7f85a1] text-white"
           >
               View Profile
           </button>

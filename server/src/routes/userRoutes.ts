@@ -1,5 +1,22 @@
 import { Router, Request, Response, RequestHandler } from 'express';
+import express from 'express';
+import * as admin from 'firebase-admin';
+const firebaseConfig = require('../firebase-config.json');
 import { PrismaClient } from '@prisma/client';
+import dotenv from 'dotenv';
+dotenv.config();
+
+// Initialize Firebase Admin SDK
+try {
+  const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_KEY || '';
+  const serviceAccount = require(serviceAccountPath);
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+} catch (error) {
+  console.error('Error initializing Firebase Admin SDK:', error);
+}
 
 const prisma = new PrismaClient();
 const userRouter = Router();
@@ -134,13 +151,34 @@ const customAnxiety: RequestHandler = async (req, res) => {
   }
 };
 
-// TODO: Update user information
+const editUserInfo: RequestHandler<UserRequestParams> = async (req, res) => {
+  const { firebase_uid } = req.params;
+  const { first_name, email } = req.body;
+  try {
+    const user = await admin.auth().updateUser(firebase_uid, {
+    email,
+    displayName: first_name,
+    });
+
+    const updatedUser = await prisma.users.update({
+      where: { firebase_uid },
+      data: {
+        first_name,
+        email,
+      },
+    });
+    res.json(updatedUser);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Error updating user information' });
+  }
+};
 
 // TODO: Delete user
 
 userRouter.get('/:firebase_uid', getUserInfo);
 userRouter.post('/new-user', createUser);
 userRouter.post('/create-custom-anxiety', customAnxiety);
-
+userRouter.put('/:firebase_uid/edit-profile', express.json(), editUserInfo);
 
 export default userRouter;
