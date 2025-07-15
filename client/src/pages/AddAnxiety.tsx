@@ -217,6 +217,22 @@ const AddAnxiety: React.FC = () => {
         setCanSubmit(errors.length === 0);
     };
 
+    const handleDragStart = (e: React.DragEvent, condition: any) => {
+    e.dataTransfer.setData('text/plain', JSON.stringify(condition));
+    };
+
+    const handleDrop = (e: React.DragEvent, rating: number) => {
+    e.preventDefault();
+    const conditionData = JSON.parse(e.dataTransfer.getData('text/plain'));
+    
+    handleRankingChange(
+        conditionData.condition_id,
+        conditionData.factor_id,
+        conditionData.condition_name,
+        rating
+    );
+    };
+
     const handleSubmit = async () => {
         if (!canSubmit) {
             console.error("Form validation failed. Please fix the errors before submitting.");
@@ -295,39 +311,138 @@ const AddAnxiety: React.FC = () => {
 
             {/* Display conditions for selected factors */}
             {selectedFactorName && conditions && conditions.length > 0 && (
-            <div>
-            <h2 className="text-2xl text-black font-afacad text-center font-semibold mb-2 mt-4">When it comes to these factors, how anxious do these conditions make you feel?</h2>
-            <p className="italic text-black text-center text-lg font-afacad mb-2">0-not anxious at all, 1-somewhat anxious, 2-very anxious, 3-extremely anxious</p>
-            {conditions.map((condition, index) => (
-                <div key={`${condition.condition_id}-${index}`} className="mb-4 text-center">
-                    <label className="block text-black text-xl text-bold font-afacad">
+        <div>
+            <h2 className="text-2xl text-black font-afacad text-center font-semibold mb-2 mt-4">
+            When it comes to these factors, how anxious do these conditions make you feel?
+            </h2>
+            <p className="italic text-black text-center text-lg font-afacad mb-4">
+            Drag conditions into the appropriate anxiety level column
+            </p>
+            
+            <div className="flex gap-2 mb-4">
+            {/* Rating Column 0 - No Problem */}
+            <div className="flex-1 border-2 border-gray-300 min-h-[400px] p-4">
+                <h3 className="text-center font-bold mb-2 text-black">No Problem</h3>
+                <p className="text-center text-sm mb-4 text-black">This doesn't really bother me at all</p>
+                <div
+                className="min-h-[300px] border-dashed border-2 border-gray-400 p-2"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => handleDrop(e, 0)}
+                >
+                {conditions
+                    .filter(condition => rankings.find(r => r.condition_id === condition.condition_id)?.rating === 0)
+                    .map((condition, index) => (
+                    <div
+                        key={`${condition.condition_id}-${index}`}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, condition)}
+                        className="bg-white border border-gray-300 p-2 mb-2 cursor-move text-black"
+                    >
                         {condition.con_desc || condition.condition_name}
-                    </label>
-                    {[0, 1, 2, 3].map((rating) => (
-                        <label key={rating} className="inline-block mr-4 text-black font-afacad text-lg">
-                            <input
-                                type="radio"
-                                name={`rating-${condition.condition_id}`}
-                                checked={rankings.find((r) => r.condition_id === condition.condition_id)?.rating === rating}
-                                onChange={() => handleRankingChange(
-                                    condition.condition_id, 
-                                    condition.factor_id, 
-                                    condition.condition_name, 
-                                    rating
-                                )}
-                            />
-                            {rating}
-                        </label>
+                    </div>
                     ))}
                 </div>
-            ))}
+            </div>
+
+            {/* Rating Column 1 - A Little Anxious */}
+            <div className="flex-1 border-2 border-gray-300 min-h-[400px] p-4">
+                <h3 className="text-center font-bold mb-2 text-black">A Little Anxious</h3>
+                <p className="text-center text-sm mb-4 text-black">This makes my heart beat faster</p>
+                <div
+                className="min-h-[300px] border-dashed border-2 border-gray-400 p-2"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => handleDrop(e, 1)}
+                >
+                {conditions
+                    .filter(condition => rankings.find(r => r.condition_id === condition.condition_id)?.rating === 1)
+                    .map((condition, index) => (
+                    <div
+                        key={`${condition.condition_id}-${index}`}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, condition)}
+                        className="bg-white border border-gray-300 p-2 mb-2 cursor-move text-black"
+                    >
+                        {condition.con_desc || condition.condition_name}
+                    </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Rating Column 2 - Very Anxious */}
+            <div className="flex-1 border-2 border-gray-300 min-h-[400px] p-4">
+                <h3 className="text-center font-bold mb-2 text-black">Very Anxious</h3>
+                <p className="text-center text-sm mb-4 text-black">This makes me feel uneasy and maybe nauseous</p>
+                <div
+                className="min-h-[300px] border-dashed border-2 border-gray-400 p-2"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => handleDrop(e, 2)}
+                >
+                {conditions
+                    .filter(condition => rankings.find(r => r.condition_id === condition.condition_id)?.rating === 2)
+                    .map((condition, index) => (
+                    <div
+                        key={`${condition.condition_id}-${index}`}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, condition)}
+                        className="bg-white border border-gray-300 p-2 mb-2 cursor-move text-black"
+                    >
+                        {condition.con_desc || condition.condition_name}
+                    </div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Rating Column 3 - Extremely Anxious */}
+            <div className="flex-1 border-2 border-gray-300 min-h-[400px] p-4">
+                <h3 className="text-center font-bold mb-2 text-black">Extremely Anxious</h3>
+                <p className="text-center text-sm mb-4 text-black">This makes me want to avoid the situation</p>
+                <div
+                className="min-h-[300px] border-dashed border-2 border-gray-400 p-2"
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => handleDrop(e, 3)}
+                >
+                {conditions
+                    .filter(condition => rankings.find(r => r.condition_id === condition.condition_id)?.rating === 3)
+                    .map((condition, index) => (
+                    <div
+                        key={`${condition.condition_id}-${index}`}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, condition)}
+                        className="bg-white border border-gray-300 p-2 mb-2 cursor-move text-black"
+                    >
+                        {condition.con_desc || condition.condition_name}
+                    </div>
+                    ))}
+                </div>
+            </div>
+            </div>
+
+            {/* Unassigned Conditions */}
+            <div className="border-2 border-gray-500 min-h-[100px] p-4 mb-4">
+            <h3 className="text-center font-bold mb-2 text-black">Unassigned Conditions</h3>
+            <p className="text-center text-sm mb-4 text-black">Drag these conditions to the appropriate anxiety level above</p>
+            <div className="flex flex-wrap gap-2">
+                {conditions
+                .filter(condition => !rankings.find(r => r.condition_id === condition.condition_id))
+                .map((condition, index) => (
+                    <div
+                    key={`${condition.condition_id}-${index}`}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, condition)}
+                    className="bg-gray-200 border border-gray-400 p-2 cursor-move text-black"
+                    >
+                    {condition.con_desc || condition.condition_name}
+                    </div>
+                ))}
+            </div>
+            </div>
 
             {validationErrors.length > 0 && (
-                <div className="text-red-500 text-center mb-4">
-                    {validationErrors.map((error, index) => (
-                        <p key={index}>{error}</p>
-                    ))}
-                </div>
+            <div className="text-red-500 text-center mb-4">
+                {validationErrors.map((error, index) => (
+                <p key={index}>{error}</p>
+                ))}
+            </div>
             )}
         </div>
         )}
