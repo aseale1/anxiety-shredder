@@ -316,16 +316,38 @@ const AddAnxiety: React.FC = () => {
             When it comes to these factors, how anxious do these conditions make you feel?
             </h2>
             <p className="italic text-black text-center text-lg font-afacad mb-4">
-            Drag conditions into the appropriate anxiety level column
+            drag and drop to sort conditions into the categories that best describe how anxious they make you feel
             </p>
+
+            {/* Unassigned Conditions */}
+        {conditions.filter(condition => !rankings.find(r => r.condition_id === condition.condition_id)).length > 0 && (
+            <div className="bg-white border-2 border-gray-300 rounded-lg p-6 mb-4">
+            <h3 className="text-center font-afacad font-bold mb-2 text-xl text-black">Unassigned Conditions</h3>
+            <div className="flex flex-wrap gap-2">
+                {conditions
+                .filter(condition => !rankings.find(r => r.condition_id === condition.condition_id))
+                .map((condition, index) => (
+                    <div
+                    key={`${condition.condition_id}-${index}`}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, condition)}
+                    className="bg-gray-400 text-white rounded-full px-4 py-2 cursor-move font-medium hover:bg-gray-500 transition-colors"
+                    >
+                    {condition.con_desc || condition.condition_name}
+                    </div>
+                ))}
+            </div>
+            </div>
+            )}
             
-            <div className="flex gap-2 mb-4">
+            <div className="grid grid-cols-4 gap-4 mb-6">
             {/* Rating Column 0 - No Problem */}
-            <div className="flex-1 border-2 border-gray-300 min-h-[400px] p-4">
-                <h3 className="text-center font-bold mb-2 text-black">No Problem</h3>
-                <p className="text-center text-sm mb-4 text-black">This doesn't really bother me at all</p>
+            <div className="bg-gray-200 rounded-lg overflow-hidden flex flex-col">
+                <div className="bg-gray-300 px-4 py-3">
+                    <h3 className="text-center font-bold mb-1 text-xl text-black">no problem!</h3>
+                </div>
                 <div
-                className="min-h-[300px] border-dashed border-2 border-gray-400 p-2"
+                className="min-h-[400px] p-4"
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleDrop(e, 0)}
                 >
@@ -336,20 +358,27 @@ const AddAnxiety: React.FC = () => {
                         key={`${condition.condition_id}-${index}`}
                         draggable
                         onDragStart={(e) => handleDragStart(e, condition)}
-                        className="bg-white border border-gray-300 p-2 mb-2 cursor-move text-black"
+                        className="bg-gray-400 text-white rounded-full px-4 py-2 mb-2 cursor-move text-center font-medium hover:bg-gray-500 transition-colors"
                     >
                         {condition.con_desc || condition.condition_name}
                     </div>
                     ))}
                 </div>
+                <div className="self-end">
+                <div className="bg-gray-300 px-4 py-3 text-center">
+                    <p className="italic text-sm text-black font-medium">this doesn't really bother me at all</p>
+                </div>
+                </div>
             </div>
-
+            
+        
             {/* Rating Column 1 - A Little Anxious */}
-            <div className="flex-1 border-2 border-gray-300 min-h-[400px] p-4">
-                <h3 className="text-center font-bold mb-2 text-black">A Little Anxious</h3>
-                <p className="text-center text-sm mb-4 text-black">This makes my heart beat faster</p>
+            <div className="bg-green-200 rounded-lg overflow-hidden flex flex-col">
+                <div className="bg-green-500 px-4 py-3">
+                <h3 className="text-center font-bold text-xl text-white mb-1">a little anxious</h3>
+                </div>
                 <div
-                className="min-h-[300px] border-dashed border-2 border-gray-400 p-2"
+                className="min-h-[400px] p-4"
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleDrop(e, 1)}
                 >
@@ -360,22 +389,28 @@ const AddAnxiety: React.FC = () => {
                         key={`${condition.condition_id}-${index}`}
                         draggable
                         onDragStart={(e) => handleDragStart(e, condition)}
-                        className="bg-white border border-gray-300 p-2 mb-2 cursor-move text-black"
+                        className="bg-gray-400 text-white rounded-full px-4 py-2 mb-2 cursor-move text-center font-medium hover:bg-gray-500 transition-colors"
                     >
                         {condition.con_desc || condition.condition_name}
                     </div>
                     ))}
                 </div>
+                <div className="self-end">
+                <div className="bg-green-500 px-4 py-3 text-center">
+                    <p className="italic text-sm text-white font-medium">this makes my heart beat faster</p>
+                </div>
+                </div>
             </div>
 
             {/* Rating Column 2 - Very Anxious */}
-            <div className="flex-1 border-2 border-gray-300 min-h-[400px] p-4">
-                <h3 className="text-center font-bold mb-2 text-black">Very Anxious</h3>
-                <p className="text-center text-sm mb-4 text-black">This makes me feel uneasy and maybe nauseous</p>
+            <div className="bg-blue-200 rounded-lg overflow-hidden flex flex-col">
+                <div className="bg-blue-500 px-4 py-3">
+                <h3 className="text-center font-bold text-xl text-white mb-1">very anxious</h3>
+                </div>
                 <div
-                className="min-h-[300px] border-dashed border-2 border-gray-400 p-2"
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => handleDrop(e, 2)}
+                    className="min-h-[400px] p-4"
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={(e) => handleDrop(e, 2)}
                 >
                 {conditions
                     .filter(condition => rankings.find(r => r.condition_id === condition.condition_id)?.rating === 2)
@@ -384,20 +419,26 @@ const AddAnxiety: React.FC = () => {
                         key={`${condition.condition_id}-${index}`}
                         draggable
                         onDragStart={(e) => handleDragStart(e, condition)}
-                        className="bg-white border border-gray-300 p-2 mb-2 cursor-move text-black"
+                        className="bg-gray-400 text-white rounded-full px-4 py-2 mb-2 cursor-move text-center font-medium hover:bg-gray-500 transition-colors"
                     >
                         {condition.con_desc || condition.condition_name}
                     </div>
                     ))}
                 </div>
+                <div className="self-end">
+                <div className="bg-blue-500 px-4 py-3 text-center">
+                    <p className="italic text-sm text-white font-medium">this makes me feel uneasy and maybe nauseous</p>
+                </div>
+                </div>
             </div>
 
             {/* Rating Column 3 - Extremely Anxious */}
-            <div className="flex-1 border-2 border-gray-300 min-h-[400px] p-4">
-                <h3 className="text-center font-bold mb-2 text-black">Extremely Anxious</h3>
-                <p className="text-center text-sm mb-4 text-black">This makes me want to avoid the situation</p>
+            <div className="bg-gray-500 rounded-lg overflow-hidden flex flex-col">
+                <div className="bg-gray-700 px-4 py-3">
+                <h3 className="text-center font-bold text-xl text-white mb-1">extremely anxious</h3>
+                </div>
                 <div
-                className="min-h-[300px] border-dashed border-2 border-gray-400 p-2"
+                className="min-h-[400px] p-4"
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleDrop(e, 3)}
                 >
@@ -408,32 +449,17 @@ const AddAnxiety: React.FC = () => {
                         key={`${condition.condition_id}-${index}`}
                         draggable
                         onDragStart={(e) => handleDragStart(e, condition)}
-                        className="bg-white border border-gray-300 p-2 mb-2 cursor-move text-black"
+                        className="bg-gray-400 text-white rounded-full px-4 py-2 mb-2 cursor-move text-center font-medium hover:bg-gray-500 transition-colors"
                     >
                         {condition.con_desc || condition.condition_name}
                     </div>
                     ))}
                 </div>
-            </div>
-            </div>
-
-            {/* Unassigned Conditions */}
-            <div className="border-2 border-gray-500 min-h-[100px] p-4 mb-4">
-            <h3 className="text-center font-bold mb-2 text-black">Unassigned Conditions</h3>
-            <p className="text-center text-sm mb-4 text-black">Drag these conditions to the appropriate anxiety level above</p>
-            <div className="flex flex-wrap gap-2">
-                {conditions
-                .filter(condition => !rankings.find(r => r.condition_id === condition.condition_id))
-                .map((condition, index) => (
-                    <div
-                    key={`${condition.condition_id}-${index}`}
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, condition)}
-                    className="bg-gray-200 border border-gray-400 p-2 cursor-move text-black"
-                    >
-                    {condition.con_desc || condition.condition_name}
-                    </div>
-                ))}
+                <div className="self-end">
+                 <div className="flex bg-gray-700 px-4 py-3 text-center">
+                    <p className="italic text-sm text-white font-medium">this makes me want to avoid the situation</p>
+                </div>
+                </div>
             </div>
             </div>
 
