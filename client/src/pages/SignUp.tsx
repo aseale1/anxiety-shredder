@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { signUp } from '../firebase';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import firebase from 'firebase/compat/app';
 
 const SignUp = () => {
   const [email, setEmail] = useState('');
@@ -42,8 +41,8 @@ return (
     <div className="bg-amber-50 w-3/4 md:w-2/3 lg:w-1/2 p-8 rounded-md shadow-lg">
       <div className="text-center">
         {/* Header */}
-        <div className="font-fast text-black text-6xl mb-8">Welcome!</div>
-        <div className="font-normal italic text-black text-2xl mb-8">create new account</div>
+        <h1 className="text-black mb-8">Welcome!</h1>
+        <h3 className="font-normal italic text-black mb-8">create new account</h3>
 
         {/* User Info Section */}
         <form onSubmit={handleSubmit}>
@@ -91,7 +90,7 @@ return (
 
           <button
             type="submit"
-            className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded-md"
+            className="btn-navigate"
             disabled={password !== confirmPassword}
           >
             Sign Up

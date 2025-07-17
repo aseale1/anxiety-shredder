@@ -23,12 +23,15 @@ const CustomAnxiety: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     
     useEffect(() => {
-        addFactor(); // Initialize 1 empty factor
-    }, []);
+        if (factors.length === 0) {
+            addFactor(); // Initialize 1 empty factor
+        }
+    }, [factors]);
     
     const generateId = () => Math.random().toString(36).substring(2, 9);
 
     const addFactor = () => {
+        // Uncomment following line to limit the number of factors
         // if (factors.length >= 10) return;
         const newFactor: Factor = {
             id: generateId(),
@@ -122,19 +125,19 @@ const CustomAnxiety: React.FC = () => {
         <div className="min-h-screen w-screen bg-mountain bg-center flex justify-center items-center">
         <div className="absolute inset-0 bg-black opacity-50"></div>
         <div className="relative w-full max-w-4xl bg-amber-50 rounded-lg p-8 m-4">
-        <h1 className="text-5xl text-black text-center font-fast mb-4 pt-4">Create a Custom Anxiety Source</h1>
+        <h1 className="text-black text-center mt-5 mb-2 pt-4">Create a Custom Anxiety Source</h1>
         <div className="border-b-2 border-black mb-6"></div>
        
         {/* Anxiety Name */}
         <div className="mb-4">
-            <h2 className="text-2xl text-black font-afacad font-semibold mb-1">Anxiety Name</h2>
+            <h3 className="text-black mb-1">Anxiety Name</h3>
             
             <input
                 type="text"
                 value={anxietyName}
                 onChange={(e) => setAnxietyName(e.target.value)}
                 placeholder="ex. social events, standardized testing, etc."
-                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 border border-gray-300 rounded-lg"
             />
             </div> 
 
@@ -143,7 +146,7 @@ const CustomAnxiety: React.FC = () => {
             <div className="flex justify-between items-center mb-4">
                 <button
                     onClick={addFactor}
-                    className="bg-[#7f85a1] text-white rounded-lg hover:opacity-75"
+                    className="btn-primary rounded-lg"
                 >
                     Add A Factor
                 </button>
@@ -151,13 +154,13 @@ const CustomAnxiety: React.FC = () => {
             {factors.map((factor, factorIndex) => (
                 <div key={factor.id} className="mb-6 p-6 rounded-lg bg-white">
                     <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-2xl text-black font-afacad font-semibold">
+                        <h3 className="text-black">
                             Factor {factorIndex + 1}
                         </h3>
                         {factors.length > 1 && (
                             <button
                                 onClick={() => removeFactor(factor.id)}
-                                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                                className="px-4 py-2 btn-red"
                             > 
                                 Remove This Factor
                             </button>
@@ -170,7 +173,7 @@ const CustomAnxiety: React.FC = () => {
                             value={factor.factor_name}
                             onChange={(e) => updateFactorName(factor.id, e.target.value)}
                             placeholder="ex. how many people are there, how long is the event, etc."
-                            className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full p-2 border border-gray-300 rounded-lg"
                         />
                     </div>
 
@@ -179,7 +182,7 @@ const CustomAnxiety: React.FC = () => {
                                     
                                     <button
                                         onClick={() => addCondition(factor.id)}
-                                        className="bg-[#7f85a1] text-white rounded-lg hover:opacity-75"
+                                        className="btn-primary rounded-lg"
                                     >
                                         Add A Condition
                                     </button>
@@ -192,7 +195,7 @@ const CustomAnxiety: React.FC = () => {
                                         </span>
                                         <button
                                             onClick={() => removeCondition(factor.id, condition.id)}
-                                            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                                            className="btn-red px-4 py-2"
                                         >
                                             Remove This Condition
                                         </button>
@@ -205,7 +208,7 @@ const CustomAnxiety: React.FC = () => {
                                                 value={condition.condition_name}
                                                 onChange={(e) => updateCondition(factor.id, condition.id, 'condition_name', e.target.value)}
                                                 placeholder="ex. less than 10 people, 1 hour long, etc."
-                                                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                className="w-full p-2 border border-gray-300 rounded-lg"
                                             />
                                             </div>
                                         <div>
@@ -215,35 +218,36 @@ const CustomAnxiety: React.FC = () => {
                                                 value={condition.con_desc || ''}
                                                 onChange={(e) => updateCondition(factor.id, condition.id, 'con_desc', e.target.value)}
                                                 placeholder="optional description"
-                                                className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                className="w-full p-2 border border-gray-300 rounded-lg"
                                             />
                                             </div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
-
-                            {/* Action Buttons */}
-                            <div className="flex justify-between items-center pt-6 border-t-2 border-gray-300">
-                                <button 
-                                    onClick={() => navigate("/")} 
-                                    className="bg-gray-500 text-white px-6 py-3 rounded-lg font-afacad text-lg hover:bg-gray-600"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleSubmit}
-                                    className={`bg-blue-500 text-white px-6 py-3 rounded-lg font-afacad text-lg hover:bg-blue-600 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                    disabled={isSubmitting}
-                                >
-                                    {isSubmitting ? 'Submitting...' : 'Submit'}
-                                </button>
-                            </div>
                             </div>
                         ))}
                         </div>
+
+                        {/* Return Home */}
+                        <button 
+                            onClick={() => navigate("/home")} 
+                            className="btn-navigate absolute top-0 left-0 mt-2 ml-4"
+                        >
+                            Return to Home
+                        </button>
+
+                        {/* Submit Button */}
+                        <button
+                            onClick={handleSubmit}
+                            className={`btn-secondary w-full ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={isSubmitting}
+                            >
+                            {isSubmitting ? 'Submitting...' : 'Submit'}
+                        </button>
                     </div>
                     </div>
+                    
     );
 };
 export default CustomAnxiety;

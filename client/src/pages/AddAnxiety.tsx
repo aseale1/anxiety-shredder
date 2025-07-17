@@ -274,8 +274,8 @@ const AddAnxiety: React.FC = () => {
     return (
         <div className="min-h-screen w-screen bg-mountain bg-center flex justify-center items-center">
         <div className="absolute inset-0 bg-black opacity-50"></div>
-        <div className="relative w-full max-w-4xl bg-amber-50 rounded-lg p-8 m-4">
-        <h1 className="text-6xl text-black text-center font-fast mb-4 pt-8">What's making you feel anxious?</h1>
+        <div className="relative w-full max-w-6xl bg-amber-50 rounded-lg p-8 m-4">
+        <h1 className="text-black text-center mb-4 pt-8">What's making you feel anxious?</h1>
         <div className="border-b-2 border-black mb-6"></div>
 
             {/* Display untracked anxieties */}
@@ -283,7 +283,7 @@ const AddAnxiety: React.FC = () => {
                 {anxieties.map((anxiety) => (
                     <button 
                         key={anxiety.anx_id}
-                        className={`py-3 px-6 rounded-full font-afacad text-black text-lg text-center ${selectedAnxieties === anxiety.anx_id 
+                        className={`btn-primary text-black py-3 px-6 ${selectedAnxieties === anxiety.anx_id 
                             ? "bg-[#7f85a1] border-2 border-black" 
                             : "bg-[#7f85a1]"}`}
                         onClick={() => handleAnxietySelect(anxiety.anx_id)}
@@ -296,9 +296,9 @@ const AddAnxiety: React.FC = () => {
             {/* Display factors for selected anxiety */}
             {selectedAnxieties && (
                 <div>
-                    <h2 className="text-2xl text-black text-center font-semibold font-afacad mt-4">What about {anxieties.find((a) => a.anx_id === selectedAnxieties)?.anx_name} causes anxiety?</h2>
+                    <h3 className="text-black text-center mt-4">What about {anxieties.find((a) => a.anx_id === selectedAnxieties)?.anx_name} causes anxiety?</h3>
                     {factors.map((factor) => (
-                        <label key={factor.factor_id} className="block text-black text-xl font-afacad pl-40">
+                        <label key={factor.factor_id} className="block text-black pl-40">
                             <input
                                 type="checkbox"
                                 onChange={() => handleFactorSelect(factor)}
@@ -311,18 +311,18 @@ const AddAnxiety: React.FC = () => {
 
             {/* Display conditions for selected factors */}
             {selectedFactorName && conditions && conditions.length > 0 && (
-        <div>
-            <h2 className="text-2xl text-black font-afacad text-center font-semibold mb-2 mt-4">
+        <div className="max-w-7xl mx-auto p-6">
+            <h3 className="text-black text-center mb-2 mt-4">
             When it comes to these factors, how anxious do these conditions make you feel?
-            </h2>
-            <p className="italic text-black text-center text-lg font-afacad mb-4">
+            </h3>
+            <p className="italic text-black text-center mb-4">
             drag and drop to sort conditions into the categories that best describe how anxious they make you feel
             </p>
 
             {/* Unassigned Conditions */}
         {conditions.filter(condition => !rankings.find(r => r.condition_id === condition.condition_id)).length > 0 && (
             <div className="bg-white border-2 border-gray-300 rounded-lg p-6 mb-4">
-            <h3 className="text-center font-afacad font-bold mb-2 text-xl text-black">Unassigned Conditions</h3>
+            <h3 className="text-center mb-2 text-black">Unassigned Conditions</h3>
             <div className="flex flex-wrap gap-2">
                 {conditions
                 .filter(condition => !rankings.find(r => r.condition_id === condition.condition_id))
@@ -340,14 +340,14 @@ const AddAnxiety: React.FC = () => {
             </div>
             )}
             
-            <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-4 gap-2 mb-6">
             {/* Rating Column 0 - No Problem */}
             <div className="bg-gray-200 rounded-lg overflow-hidden flex flex-col">
                 <div className="bg-gray-300 px-4 py-3">
-                    <h3 className="text-center font-bold mb-1 text-xl text-black">no problem!</h3>
+                    <h3 className="text-center font-bold mb-1 text-2xl text-black">no problem!</h3>
                 </div>
                 <div
-                className="min-h-[400px] p-4"
+                className="min-h-[400px] p-4 flex-1"
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleDrop(e, 0)}
                 >
@@ -364,10 +364,8 @@ const AddAnxiety: React.FC = () => {
                     </div>
                     ))}
                 </div>
-                <div className="self-end">
                 <div className="bg-gray-300 px-4 py-3 text-center">
-                    <p className="italic text-sm text-black font-medium">this doesn't really bother me at all</p>
-                </div>
+                    <p className="italic text-md text-black">this doesn't really bother me at all</p>
                 </div>
             </div>
             
@@ -375,10 +373,10 @@ const AddAnxiety: React.FC = () => {
             {/* Rating Column 1 - A Little Anxious */}
             <div className="bg-green-200 rounded-lg overflow-hidden flex flex-col">
                 <div className="bg-green-500 px-4 py-3">
-                <h3 className="text-center font-bold text-xl text-white mb-1">a little anxious</h3>
+                <h3 className="text-center font-bold text-2xl text-white mb-1">a little anxious</h3>
                 </div>
                 <div
-                className="min-h-[400px] p-4"
+                className="min-h-[400px] p-4 flex-1"
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleDrop(e, 1)}
                 >
@@ -395,20 +393,18 @@ const AddAnxiety: React.FC = () => {
                     </div>
                     ))}
                 </div>
-                <div className="self-end">
                 <div className="bg-green-500 px-4 py-3 text-center">
-                    <p className="italic text-sm text-white font-medium">this makes my heart beat faster</p>
-                </div>
+                    <p className="italic text-md text-white">this makes my heart beat faster</p>
                 </div>
             </div>
 
             {/* Rating Column 2 - Very Anxious */}
             <div className="bg-blue-200 rounded-lg overflow-hidden flex flex-col">
                 <div className="bg-blue-500 px-4 py-3">
-                <h3 className="text-center font-bold text-xl text-white mb-1">very anxious</h3>
+                <h3 className="text-center font-bold text-2xl text-white mb-1">very anxious</h3>
                 </div>
                 <div
-                    className="min-h-[400px] p-4"
+                    className="min-h-[400px] p-4 flex-1"
                     onDragOver={(e) => e.preventDefault()}
                     onDrop={(e) => handleDrop(e, 2)}
                 >
@@ -425,20 +421,18 @@ const AddAnxiety: React.FC = () => {
                     </div>
                     ))}
                 </div>
-                <div className="self-end">
                 <div className="bg-blue-500 px-4 py-3 text-center">
-                    <p className="italic text-sm text-white font-medium">this makes me feel uneasy and maybe nauseous</p>
-                </div>
+                    <p className="italic text-md text-white">this makes me feel uneasy and maybe nauseous</p>
                 </div>
             </div>
 
             {/* Rating Column 3 - Extremely Anxious */}
             <div className="bg-gray-500 rounded-lg overflow-hidden flex flex-col">
                 <div className="bg-gray-700 px-4 py-3">
-                <h3 className="text-center font-bold text-xl text-white mb-1">extremely anxious</h3>
+                <h3 className="text-center font-bold text-2xl text-white mb-1">extremely anxious</h3>
                 </div>
                 <div
-                className="min-h-[400px] p-4"
+                className="min-h-[400px] p-4 flex-1"
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleDrop(e, 3)}
                 >
@@ -455,10 +449,8 @@ const AddAnxiety: React.FC = () => {
                     </div>
                     ))}
                 </div>
-                <div className="self-end">
                  <div className="flex bg-gray-700 px-4 py-3 text-center">
-                    <p className="italic text-sm text-white font-medium">this makes me want to avoid the situation</p>
-                </div>
+                    <p className="italic text-md text-white">this makes me want to avoid the situation</p>
                 </div>
             </div>
             </div>
@@ -474,16 +466,16 @@ const AddAnxiety: React.FC = () => {
         )}
         
             {/* Return Home */}
-            <button onClick={() => navigate("/home")} className="absolute top-0 left-0 mt-2 mb-2 p-2 ml-4 font-afacad text-lg bg-black text-white">Return to Home</button>
+            <button onClick={() => navigate("/home")} className="btn-navigate absolute top-0 left-0 mt-2 mb-2 p-2 ml-4">Return to Home</button>
 
             {/* Custom Anxiety */}
             <div className="flex justify-center mt-4">
-            <button onClick={() => navigate("/custom-anxiety")}  className="font-afacad text-lg bg-black text-white">Create A Custom Anxiety Source</button>
+            <button onClick={() => navigate("/custom-anxiety")}  className="btn-navigate">Create A Custom Anxiety Source</button>
             </div>
             
             {/* Submit */}
             <div className="flex justify-center mt-4">
-            <button onClick={handleSubmit} className="font-afacad text-lg bg-black text-white">Submit</button>
+            <button onClick={handleSubmit} className="btn-secondary">Submit</button>
             </div>
             
         </div>

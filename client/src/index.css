@@ -4,7 +4,15 @@
 @tailwind utilities;
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Colors */
+  --color-blue-light: #bfd9e1ff;
+  --color-blue-dark: #838fadff; 
+  --color-neutral-dark: #3a3a3cff;
+  --color-neutral-light: rgb(120, 120, 125);
+  --color-amber-bg: #f3f1e3ff;
+
+  /* Typography */
+  font-family: 'Faster One', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -18,45 +26,129 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+@layer base {
+  /* Faster One Styles */
+  h1, h2 {
+    font-family: 'Faster One', cursive;
+    font-weight: 400;
+  }
+  h1 {
+    font-size: 3.4rem;
+    line-height: 1.1;
+  }
+  h2 {
+    font-size: 2.4rem;
+    line-height: 1.2;
+  }
+
+  /* Afacad Styles */
+  h3, body, p, span, div {
+    font-family: 'Afacad', Inter, system-ui, sans-serif;
+  }
+
+  h3 {
+    font-size: 1.8rem;
+    line-height: 1.3;
+    font-weight: 500;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    font-size: 1.3rem;
+  }
+
+  a {
+    font-weight: 500;
+    color: #646cff;
+    text-decoration: inherit;
+  }
+  a:hover {
+    color: #535bf2;
+  }
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+@layer components {
+  /* Button Styles */
+  .btn-primary {
+    background-color: var(--color-blue-dark);
+    color: white;
+    border: none;
+    border-radius: 24px;
+    padding: 0.5em 0.8em;
+    cursor: pointer;
+    font-family: 'Afacad', sans-serif;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-blue-light);
+  }
+
+  .btn-secondary {
+    background-color: var(--color-blue-light);
+    color: black;
+    border: none;
+    border-radius: 24px;
+    padding: 0.5em 0.8em;
+    cursor: pointer;
+    font-family: 'Afacad', sans-serif;
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--color-blue-dark);
+  }
+
+  .btn-navigate {
+    background-color: var(--color-neutral-dark);
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 0.5em 0.5em;
+    font-family: 'Afacad', sans-serif;
+  }
+
+  .btn-navigate:hover {
+    background-color: var(--color-neutral-light);
+  }
+
+  .btn-red {
+    background-color: rgb(254, 100, 100);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-family: 'Afacad', sans-serif;
+  }
+
+  .btn-red:hover {
+    background-color: rgb(248, 150, 150);
+  }
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
+/* Fallback - default button */
 button {
   border-radius: 8px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+  font-family: 'Afacad', sans-serif;
+  background-color: var(--color-primary-dark);
+  color: rgb(0, 0, 0);
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: all 0.2s;
 }
+
 button:hover {
-  border-color: #646cff;
+  outline-color: black;
+  outline-style: solid;
+  outline-width: 2px;
 }
+
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 2px solid var(--color-primary-light);
+  outline-offset: 2px;
 }
 
 @media (prefers-color-scheme: light) {
@@ -66,8 +158,5 @@ button:focus-visible {
   }
   a:hover {
     color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
   }
 }

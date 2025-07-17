@@ -96,7 +96,7 @@ const Profile = () => {
       {/* Return Home */}
             <button 
                 onClick={() => navigate("/home")} 
-                className="absolute top-10 left-5 mt-2 p-2 ml-4 font-afacad text-lg bg-[#7f85a1] text-white"
+                className="top-0 font-afacad text-lg bg-[#7f85a1] text-white"
             >
                 Return to Home
             </button>

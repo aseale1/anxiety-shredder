@@ -340,37 +340,37 @@ const ViewProgress: React.FC = () => {
     return (
         <div className="min-h-screen w-screen bg-amber-50">
             {/* Display Anxiety Name */}
-            {anxiety && ( <h1 className="pt-16 text-6xl text-center text-black font-fast">{anxiety.anx_name}</h1> )}
+            {anxiety && ( <h1 className="pt-16 text-center text-black">{anxiety.anx_name}</h1> )}
     
             {/* Edit Mode Button */}
-            <button className="absolute top-0 right-0 mt-2 p-2 mr-4 font-afacad text-lg  bg-red-400 text-white" onClick={() => setEditMode(!editMode)}>
+            <button className="btn-red absolute top-0 right-0 mt-2 mr-4" onClick={() => setEditMode(!editMode)}>
                 {editMode ? "Cancel" : "Edit"}
             </button>
     
             {/* Delete Anxiety Button */}
             {editMode && (
-                <button className="mt-2 p-2 font-afacad bg-red-600 text-white" onClick={handleDeleteAnxiety}>
+                <button className="mt-2 p-2 btn-red" onClick={handleDeleteAnxiety}>
                     Remove Anxiety
                 </button>
             )}
             <div className="flex justify-center mt-5">
                 
             {/* View Details Button */}
-            <button className="p-2 font-afacad bg-[#7f85a1] text-white text-center" onClick={() => setDetailsVisible(!detailsVisible)}>
+            <button className="btn-primary" onClick={() => setDetailsVisible(!detailsVisible)}>
                 {detailsVisible ? "Hide Details" : "View Anxiety  Details"}
             </button>
             </div>
 
             {/* View Active Challenges Button */}
-            <div className="flex justify-center mt-5">
-                <button className="p-2 font-afacad bg-[#7f85a1] text-white text-center" onClick={handleViewChallenges}>
+            <div className="flex justify-center mt-2">
+                <button className="btn-primary" onClick={handleViewChallenges}>
                     {viewingChallenges ? "Hide Active Challenges" : "View Active Challenges"}
                 </button>
             </div>
 
             {/* Generate Mountain Button */}
-            <div className="flex justify-center mt-5">
-                <button className="p-2 font-afacad bg-[#7f85a1] text-white text-center" 
+            <div className="flex justify-center mt-6">
+                <button className="btn-secondary" 
                 onClick={() => {
                     if (currentUser?.uid) {
                     sessionStorage.setItem("firebase_uid", currentUser?.uid);
@@ -386,17 +386,17 @@ const ViewProgress: React.FC = () => {
             {/* Display Factors & Their Conditions */}
             {detailsVisible && factors.map((factor) => (
                 <div key={factor.factor_id} className="flex flex-col mt-4 ml-5">
-                    <h2 className="text-xl text-black font-semibold">{factor.factor_name}</h2>
+                    <h3 className="text-black font-normal">{factor.factor_name}</h3>
                     {conditions
                         .filter((condition) => condition.factor_id === factor.factor_id)
                         .map((condition) => (
                             <div key={condition.condition_id} className="flex items-center">
                                <span className="text-lg text-black font-afacad">
-                                    - {condition.condition_name}: {condition.user_con_rating.length > 0 ? condition.user_con_rating[0].rating : "No rating"}
+                                    - {condition.con_desc}: {condition.user_con_rating.length > 0 ? condition.user_con_rating[0].rating : "No rating"}
                                 </span>
 
                                 {editMode && (
-                                    <button className="ml-2 p-2 font-afacad bg-red-450 text-white" onClick={() => handleDeleteFactor(factor.factor_id)}>
+                                    <button className="ml-2 p-2 btn-red" onClick={() => handleDeleteFactor(factor.factor_id)}>
                                         Remove Factor
                                     </button>
                                 )}
@@ -408,7 +408,7 @@ const ViewProgress: React.FC = () => {
             {/* Display Active Challenges */}
             {viewingChallenges && (
                 <div className="flex flex-col mt-4 ml-5">
-                    <h2 className="text-xl text-black font-semibold">Active Challenges</h2>
+                    <h3 className="font-normal text-black">Active Challenges</h3>
                     {activeChallenges.length === 0 ? (
                         <p className="text-center text-lg text-black">No active challenges. Generate one to get started!</p>
                     ) : (
@@ -518,7 +518,7 @@ const ViewProgress: React.FC = () => {
                                 onClick={() => handleGenerateChallenge(level)}
                             >
                                 {/* Counter-rotate the text so it appears straight */}
-                                <span className="-rotate-45">{level}</span>
+                                <span className="-rotate-45 text-white">{level}</span>
                             </button>
                         );
                     }
@@ -545,7 +545,7 @@ const ViewProgress: React.FC = () => {
                             <div className="flex justify-center gap-4 mt-4">
 
                                 <button 
-                                    className="p-2 font-afacad bg-[#7f85a1] text-white rounded"
+                                    className="p-2 btn-secondary"
                                     onClick={handleTrackChallenge}
                                 >
                                     Track Challenge
@@ -564,7 +564,7 @@ const ViewProgress: React.FC = () => {
             {/* Return Home */}
             <button 
                 onClick={() => navigate("/home")} 
-                className="absolute top-0 left-0 mt-2 p-2 ml-4 font-afacad text-lg bg-[#7f85a1] text-white"
+                className="btn-navigate absolute top-0 left-0 mt-2 ml-4"
             >
                 Return to Home
             </button>

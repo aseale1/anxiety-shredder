@@ -67,7 +67,7 @@ const Home = () => {
     
     <div className="relative z-10 pt-10">
     <div className="bg-amber-50 max-w-2xl mx-auto rounded-xl p-6 shadow-lg">
-      <h1 className="text-center text-black font-fast">
+      <h1 className="text-center text-black">
         Welcome, {userData?.first_name || 'Loading...'}
       </h1>
       {loading ? (
@@ -75,32 +75,32 @@ const Home = () => {
       ) : userData ? (
         <div className="text-center">
   
-          <h2 className="mt-4 text-2xl font-semibold font-afacad text-black">You are working on:</h2>
+          <h3 className="mt-4 text-black">You are working on:</h3>
           {Array.isArray(anxieties) && anxieties.length > 0 ? (
             <ul className="mt-2 space-y-2">
               {anxieties.map((anx) => (
                 <li key={anx.anx_id} className="text-black text-lg font-afacad">
                   
                 {/* Navigate to ViewProgress based on selected anxiety */}
-                  <button onClick={() => navigate("/view-progress/" + anx.anx_id)} className="p-2 rounded-full bg-[#7f85a1] text-black font-afacad"> {anx.anxiety_source.anx_name} </button>
+                  <button onClick={() => navigate("/view-progress/" + anx.anx_id)} className="btn-primary"> {anx.anxiety_source.anx_name} </button>
                 </li>
               ))}
             </ul>
           ) : (
             <p className="text-black font-afacad">No anxieties found.</p>
           )}
-          <p className="text-center mt-2 text-black italic font-afacad">select an anxiety source to view your progress</p>
-          <button onClick={() => navigate("/add-anxiety")} className="bg-black-500 font-afacad text-lg text-white p-2 mt-10">+ Add an Anxiety Source</button>
+          <p className="text-center text-black italic mt-4">select an anxiety source to view your progress</p>
+          <button onClick={() => navigate("/add-anxiety")} className="btn-secondary mt-8">+ Add an Anxiety Source</button>
           {/* Profile Page*/}
           <button 
               onClick={() => navigate("/profile")} 
-              className="flex bottom-2 right-10 mt-2 p-2 ml-4 font-afacad text-lg bg-[#7f85a1] text-white"
+              className="btn-navigate flex mt-6 ml-1"
           >
               View Profile
           </button>
         </div>
       ) : (
-        <p className="text-center text-black font-afacad">No user data available.</p>
+        <p className="text-center text-black">No user data available.</p>
       )}
       
     </div>
