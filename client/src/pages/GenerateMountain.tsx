@@ -180,7 +180,7 @@ const GenerateMountain: React.FC = () => {
         <div className="flex justify-between items-center mb-6">
           
           {anxiety && (
-            <h1 className="text-3xl text-center text-black font-fast flex-grow">
+            <h1 className="text-4xl text-center text-black">
               Your "{anxiety.anx_name}" Mountain
             </h1>
           )}
@@ -209,9 +209,9 @@ const GenerateMountain: React.FC = () => {
           <div className="p-6">
             {maxChallenges && Object.entries(maxChallenges).map(([level, count]) => (
               <div key={level} className="mb-8">
-                <h2 className={`text-xl text-black font-bold mb-2 ${count > 0 ? '' : 'text-gray-400'}`}>
+                <h3 className={`text-black mb-2 ${count > 0 ? '' : 'text-gray-400'}`}>
                   {level} Level Challenges {count > 0 ? `(${count} possible)` : '(Not available)'}
-                </h2>
+                </h3>
                 
                 {count === 0 ? (
                   <p className="text-gray-500 italic">
