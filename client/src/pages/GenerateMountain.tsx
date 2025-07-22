@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { mockAnxietySources, mockFactors, mockConditions, generateChallengeDemo } from "../mocks/mockAPIs";
+import { mockAnxietySources, mockConditions, generateChallengeDemo } from "../mocks/mockAPIs";
 
 interface Challenge {
   description: string;
@@ -44,7 +44,6 @@ interface AnxietySource {
 const GenerateMountain: React.FC = () => {
 
     const { anx_id } = useParams();
-    const demoUser = { uid: 'demo-user' };
     const [anxiety, setAnxiety] = useState<AnxietySource | null>(null);
     const [maxChallenges, setMaxChallenges] = useState<MaxChallenges | null>(null);
     const [generatedChallenges, setGeneratedChallenges] = useState<Challenge[]>([]);
@@ -177,14 +176,11 @@ const GenerateMountain: React.FC = () => {
    <div className="min-h-screen w-screen bg-white p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          
+        <div className="flex justify-center items-center mb-6">
           {anxiety && (
-            <h1 className="text-4xl text-center text-black">
-              Your "{anxiety.anx_name}" Mountain
-            </h1>
+            <h1 className="text-4xl text-black">
+              Your "{anxiety.anx_name}" Mountain </h1>
           )}
-          <div className="w-[100px]"></div>
         </div>
         <div className="text-center">
           <h2 className="mt-4 text-xl italic font-afacad text-black">Below is a list of all possible challenges based on your condition ratings</h2>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { mockAnxietySources, mockFactors, mockConditions } from "../mocks/mockAPIs";
 
 const AddAnxiety: React.FC = () => {
@@ -391,7 +391,6 @@ const AddAnxiety: React.FC = () => {
             {conditions.filter(condition => !rankings.find(r => r.con_id === condition.con_id)).length > 0 && (
             <div className="border-2 border-gray-500 min-h-[100px] p-4 mb-4">
             <h3 className="text-center mb-2 text-black">Unassigned Conditions</h3>
-            <p className="text-center text-sm mb-4 text-black">Drag these conditions to the appropriate anxiety level above</p>
             <div className="flex flex-wrap gap-2">
                 {conditions
                 .filter(condition => !rankings.find(r => r.con_id === condition.con_id))
