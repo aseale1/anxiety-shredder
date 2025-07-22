@@ -49,6 +49,12 @@ return (
         {/* Sign Up Section */}
         <div className="text-lg text-black font-afacad mt-6">FIRST TIME HERE?</div>
         <button onClick={() => navigate('/sign-up')} className="btn-primary text-black w-full p-2 mt-2">Sign Up</button>
+        <div className="italic text-sm text-black font-afacad mt-6">Forgot Password?
+        <button 
+        //onClick={() => navigate('/sign-up')} 
+        className="btn-red ml-2 rounded-sm p-0.5">Recover</button>
+        </div>
+      
       </div>
     </div>
   </div>

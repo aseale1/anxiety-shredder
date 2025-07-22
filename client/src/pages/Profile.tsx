@@ -57,16 +57,16 @@ const Profile = () => {
     
     <div className="relative z-10 pt-10">
     <div className="bg-amber-50 max-w-2xl mx-auto rounded-xl p-6 shadow-lg">
-      <h1 className="mt-8 text-center text-black font-fast">
+      <h1 className=" text-center text-black">
         Your Profile:
       </h1>
       {loading ? (
         <p className="text-center text-black font-afacad">Loading...</p>
       ) : userData ? (
         <div className="text-center">
-          <p className="text-black text-xl font-afacad">Email: {userData.email}</p>
+          <p className="text-black text-2xl">Email: {userData.email}</p>
           <button 
-           className="p-2 font-afacad bg-red-500 text-white rounded"
+           className="btn-red p-2"
            onClick={() => {
             const newEmail = prompt("Enter your new email address:");
             if (newEmail && currentUser) {
@@ -76,9 +76,9 @@ const Profile = () => {
            >
           Change Email Address
            </button>
-          <p className="text-black text-xl font-afacad">Name: {userData.first_name}</p>
+          <p className="text-black text-2xl mt-4">Name: {userData.first_name}</p>
           <button 
-           className="p-2 font-afacad bg-red-500 text-white rounded"
+           className="btn-red p-2"
            onClick={() => {
             const newName = prompt("Enter your new name:");
             if (newName && currentUser) {
@@ -88,15 +88,20 @@ const Profile = () => {
            >
           Change Name
            </button>
+          <div className="border-b-2 border-black mb-4 mt-4"></div>
+           <button
+           className="btn-red italic text-black p-2" >
+           Reset Password
+           </button>
         </div>
         
       ) : (
-        <p className="text-center text-black font-afacad">No user data available.</p>
+        <p className="italic text-2xl text-center text-black">No user data available.</p>
       )}
       {/* Return Home */}
             <button 
                 onClick={() => navigate("/home")} 
-                className="top-0 font-afacad text-lg bg-[#7f85a1] text-white"
+                className="btn-navigate mt-4"
             >
                 Return to Home
             </button>
