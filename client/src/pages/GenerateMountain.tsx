@@ -120,13 +120,12 @@ const GenerateMountain: React.FC = () => {
    <div className="min-h-screen w-screen bg-white p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-center items-center mb-6">
           
           {anxiety && (
-            <h1 className="text-center text-black text-4xl">
+            <h1 className="text-black text-4xl">
               Your "{anxiety.anx_name}" Mountain</h1>
           )}
-          <div className="w-[100px]"></div>
         </div>
         <div className="text-center">
           <h2 className="mt-4 text-xl italic font-afacad text-black">Below is a list of all possible challenges based on your condition ratings</h2>

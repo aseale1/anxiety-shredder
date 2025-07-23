@@ -238,6 +238,24 @@ const completeChallenge: RequestHandler = async (req, res) => {
     }
   };
 
+// Fetch all completed challenges for a user for a specific anxiety
+const getCompletedChallengesForAnxiety: RequestHandler = async (req, res) => {
+    const { firebase_uid } = req.params;
+    const { anx_id } = req.query;
+    try {
+      const completedChallenges = await prisma.challenges.findMany({
+        where: {
+          firebase_uid,
+          anx_id: parseInt(anx_id as string),
+          completed: true,
+        },
+      });
+      res.status(200).json(completedChallenges);
+    } catch (err) {
+      res.status(500).json({ error: "Error fetching completed challenges" });
+    }
+  };
+
 // Delete a challenge
 const deleteChallenge: RequestHandler = async (req, res) => {
     const { firebase_uid, chall_id } = req.body;
@@ -324,6 +342,7 @@ challengeRouter.post('/generate-challenge', generateChallenge);
 challengeRouter.post('/save-challenge', saveChallenge);
 challengeRouter.get('/:firebase_uid/user-challenges', getUserChallengesForAnxiety);
 challengeRouter.put('/complete-challenge', completeChallenge);
+challengeRouter.get('/:firebase_uid/completed-challenges', getCompletedChallengesForAnxiety);
 challengeRouter.delete('/delete-challenge', deleteChallenge);
 challengeRouter.post('/generate-max-challenges', generateMaxChallenges);
 

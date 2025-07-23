@@ -64,6 +64,8 @@ const ViewProgress: React.FC = () => {
     const [currentChallengePreview, setCurrentChallengePreview] = useState<ChallengePreview | null>(null);
     const [challengeReminders, setChallengeReminders] = useState<{[key: number]: Reminder}>({});
     const [reminderDropdowns, setReminderDropdowns] = useState<{[key: number]: boolean}>({});
+    const [viewingCompletedChallenges, setViewingCompletedChallenges] = useState<boolean>(false);
+    const [completedChallenges, setCompletedChallenges] = useState<Challenge[]>([]);
 
     useEffect(() => {
         const fetchAnxietyAndFactors = async () => {
@@ -126,6 +128,23 @@ const ViewProgress: React.FC = () => {
         } catch (error) {
             console.error("Error fetching active challenges:", error);
             setError("Error fetching active challenges. Please try again.");
+        }
+    };
+
+    const fetchCompletedChallenges = async () => {
+        try {
+            if (currentUser) {
+                const response = await axios.get(`/api/${currentUser.uid}/completed-challenges`, {
+                    params: {
+                        firebase_uid: currentUser.uid,
+                        anx_id: anx_id,
+                    }
+                });
+                setCompletedChallenges(response.data);
+            }
+        } catch (error) {
+            console.error("Error fetching completed challenges:", error);
+            setError("Error fetching completed challenges. Please try again.");
         }
     };
 
@@ -235,6 +254,20 @@ const ViewProgress: React.FC = () => {
             setError("Failed to mark challenge as completed. Please try again.");
         }
     };
+
+    const handleViewCompletedChallenges = async () => {
+        if (viewingCompletedChallenges) {
+            setViewingCompletedChallenges(false);
+        } else {
+            setViewingCompletedChallenges(true);
+            setChallengeDescription(null);
+            setCurrentChallLevel(null);
+            setCurrentChallengePreview(null);
+            setViewingChallenges(false);
+            await fetchCompletedChallenges();
+        }
+    };
+
     const handleDeleteChallenge = async (chall_id: number) => {
         try {
             const confirmDelete = window.confirm("Are you sure you want to delete this challenge?");
@@ -333,6 +366,7 @@ const ViewProgress: React.FC = () => {
         setChallengeDescription(null);
         setCurrentChallLevel(null);
         setCurrentChallengePreview(null);
+        setViewingCompletedChallenges(false);
         await fetchActiveChallenges();
         }
     };
@@ -368,6 +402,13 @@ const ViewProgress: React.FC = () => {
                 </button>
             </div>
 
+            {/* View Completed Challenges Button */}
+            <div className="flex justify-center mt-2">
+                <button className="btn-primary" onClick={handleViewCompletedChallenges}>
+                    {viewingCompletedChallenges ? "Hide Completed Challenges" : "View Completed Challenges"}
+                </button>
+            </div>
+
             {/* Generate Mountain Button */}
             <div className="flex justify-center mt-6">
                 <button className="btn-secondary" 
@@ -383,27 +424,49 @@ const ViewProgress: React.FC = () => {
                 </button>
             </div>
     
-            {/* Display Factors & Their Conditions */}
-            {detailsVisible && factors.map((factor) => (
-                <div key={factor.factor_id} className="flex flex-col mt-4 ml-5">
-                    <h3 className="text-black font-normal">{factor.factor_name}</h3>
-                    {conditions
-                        .filter((condition) => condition.factor_id === factor.factor_id)
-                        .map((condition) => (
-                            <div key={condition.condition_id} className="flex items-center">
-                               <span className="text-lg text-black font-afacad">
-                                    - {condition.con_desc}: {condition.user_con_rating.length > 0 ? condition.user_con_rating[0].rating : "No rating"}
-                                </span>
-
-                                {editMode && (
-                                    <button className="ml-2 p-2 btn-red" onClick={() => handleDeleteFactor(factor.factor_id)}>
-                                        Remove Factor
-                                    </button>
-                                )}
+            {/* View Details */}
+            {detailsVisible && (
+                <div className="max-w-6xl mx-auto px-4 mt-8">
+                    <div className="grid grid-cols-2 gap-6">
+                        {factors.map((factor) => (
+                                <div key={factor.factor_id} className="bg-white rounded-lg shadow-md p-6">
+                                <h3 className="text-xl font-semibold text-black mb-4">{factor.factor_name}</h3>
+                                <div className="space-y-3">
+                                    {/* Column Headers */}
+                                    <div className="flex justify-between items-center pb-2 border-b border-gray-200">
+                                        <span className="text-sm font-medium text-gray-600">Condition</span>
+                                        <span className="text-sm font-medium text-gray-600 pr-4">Rating</span>
+                                    </div>
+                                    {/* Conditions List */}
+                                    {conditions
+                                        .filter((condition) => condition.factor_id === factor.factor_id)
+                                        .map((condition) => (
+                                            <div key={condition.condition_id} className="flex flex-col">
+                                                <div className="flex justify-between items-center gap-4">
+                                                    <span className="text-lg text-black font-afacad flex-1">
+                                                        {condition.con_desc}
+                                                    </span>
+                                                    <span className="text-lg font-medium text-black min-w-[60px] text-center">
+                                                        {condition.user_con_rating.length > 0 ? condition.user_con_rating[0].rating : "-"}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    {/* Edit Mode Button */}
+                                    {editMode && (
+                                        <button 
+                                            className="mt-4 w-full p-2 btn-red text-sm" 
+                                            onClick={() => handleDeleteFactor(factor.factor_id)}
+                                        >
+                                            Remove Factor
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         ))}
+                    </div>
                 </div>
-            ))}
+            )}
 
             {/* Display Active Challenges */}
             {viewingChallenges && (
@@ -501,9 +564,35 @@ const ViewProgress: React.FC = () => {
                     )}
                 </div>
             )}
+            {/* Display Completed Challenges */}
+            {viewingCompletedChallenges && (
+                <div className="flex flex-col mt-4 ml-5">
+                    <h3 className="text-black">Completed Challenges ({completedChallenges.length})</h3>
+                    {completedChallenges.length === 0 ? (
+                        <p className="text-black">No completed challenges yet.</p>
+                    ) : (
+                        <ul className="space-y-4">
+                            {completedChallenges.map((challenge) => (
+                                <li key={challenge.chall_id} className="bg-white p-4 rounded-lg shadow">
+                                    <div className="flex flex-col">
+                                        <div className="flex justify-between items-center">
+                                            <span className="font-semibold text-black text-xl">
+                                                Difficulty Level: {challenge.chall_level.toUpperCase()}
+                                            </span>
+                                        </div>
+                                        <p className="text-black whitespace-pre-line">
+                                            {challenge.description.split(', ').map(condition => `\n• ${condition}`).join('')}
+                                        </p>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            )}
 
             {/* Challenge Generator Section */}
-            {!viewingChallenges && !detailsVisible && (
+            {!viewingChallenges && !detailsVisible && !viewingCompletedChallenges && (
                 <>
             {/* Challenge Buttons */}
             <p className="text-center mt-10 text-black text-lg italic font-afacad">click a button to generate a challenge</p>

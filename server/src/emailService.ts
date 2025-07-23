@@ -10,9 +10,7 @@ const mailgunClient = mailgun.client({
 const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN || '';
 
 const fontImport = `
-  <head>
-    <link href="https://fonts.googleapis.com/css2?family=Faster+One&family=Afacad:wght@400;500&display=swap" rel="stylesheet">
-  </head>
+  <link href="https://fonts.googleapis.com/css2?family=Faster+One&family=Afacad:wght@400;500&display=swap" rel="stylesheet">
 `;
 
 const typographyStyles = {
@@ -45,7 +43,10 @@ const emailTemplates = {
     challengeReminder: (userName: string, anxietyName: string, challengeDescription: string, challengeLevel: string) => ({
         subject: 'Anxiety Shredder Challenge Reminder',
         html: `
+        <html)
+        <head>
         ${fontImport}
+        </head>
         <div>
             <h2>Hello ${userName}!</h2>
             <h3>This is a reminder to give your ${anxietyName} challenge a try!</h3>
@@ -56,6 +57,7 @@ const emailTemplates = {
                 Please visit the Anxiety Shredder app **INSERT LINK HERE** to adjust your notification settings or to mark this challenge as completed.
         </p>
         </div>
+        </html>
         `,  
     }),
 };
