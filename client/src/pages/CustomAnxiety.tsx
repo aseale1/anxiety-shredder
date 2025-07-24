@@ -18,6 +18,7 @@ const CustomAnxiety: React.FC = () => {
     const [anxietyName, setAnxietyName] = useState('');
     const [factors, setFactors] = useState<Factor[]>([]);
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
+    const [canSubmit, setCanSubmit] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [selectedFactors, setSelectedFactors] = useState<any[]>([]); 
     
@@ -25,7 +26,8 @@ const CustomAnxiety: React.FC = () => {
         if (factors.length === 0) {
             addFactor(); // Initialize 1 empty factor
         }
-    }, [factors]);
+        validateForm();
+    }, [anxietyName, factors]);
     
     const generateId = () => Math.random().toString(36).substring(2, 9);
 
@@ -83,9 +85,39 @@ const CustomAnxiety: React.FC = () => {
         ));
     };
 
-    //TODO: Add validation for empty fields
+    // Validation for empty fields; require at least 3 factors with at least 1 condition each
+    const validateForm = () => {
+        const errors: string[] = [];
+        if (!anxietyName.trim()) {
+            errors.push('Anxiety name is required.');
+        }
+        if (factors.length < 3) {
+            errors.push('At least 3 unique factors are required.');
+        } else {
+            factors.forEach((factor, index) => {
+                if (!factor.factor_name.trim()) {
+                    errors.push(`Factor ${index + 1} name is required.`);
+                }
+                if (factor.conditions.length === 0) {
+                    errors.push(`Factor ${index + 1} must have at least 1 condition.`);
+                } else {
+                    factor.conditions.forEach((condition, cIndex) => {
+                        if (!condition.condition_name.trim()) {
+                            errors.push(`Condition ${cIndex + 1} for Factor ${index + 1} is required.`);
+                        }
+                    });
+                }
+            });
+        }
+        setValidationErrors(errors);
+        setCanSubmit(errors.length === 0);
+    };
 
     const handleSubmit = async () => {
+        if (!canSubmit) {
+            console.error("Form validation failed. Please fix the errors before submitting.");
+            return;
+        }
         setIsSubmitting(true);
 
         try {
@@ -152,8 +184,8 @@ const CustomAnxiety: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen w-screen bg-mountain bg-center flex justify-center items-center">
-        <div className="absolute inset-0 bg-black opacity-50"></div>
+        <div className="min-h-screen w-screen bg-mountain bg-cover bg-center bg-fixed flex justify-center items-start relative p-8">
+        <div className="absolute min-h-full inset-0 bg-black bg-cover opacity-50"></div>
         <div className="relative w-full max-w-4xl bg-amber-50 rounded-lg p-8 m-4">
         <h1 className="text-black text-center mt-5 mb-2 pt-4">Create a Custom Anxiety Source</h1>
         <div className="border-b-2 border-black mb-6"></div>
@@ -258,11 +290,23 @@ const CustomAnxiety: React.FC = () => {
                             </div>
                         ))}
                         </div>
+
+                        {validationErrors.length > 0 && (
+                            <div className="mb-4">
+                                <h3 className="text-red-500 text-center mb-4">Missing Required Information:</h3>
+                                <ul className="list-disc pl-5 text-red-600">
+                                    {validationErrors.map((error, index) => (
+                                        <li key={index}>{error}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
                          {/* Submit Button */}
                         <button
                             onClick={handleSubmit}
                             className={`btn-secondary w-full ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || !canSubmit}
                             >
                             {isSubmitting ? 'Submitting...' : 'Submit'}
                         </button>

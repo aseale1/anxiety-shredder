@@ -339,8 +339,8 @@ const AddAnxiety: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen w-screen bg-mountain bg-center flex justify-center items-center">
-        <div className="absolute inset-0 bg-black opacity-50"></div>
+        <div className="min-h-screen w-screen bg-mountain bg-cover bg-center bg-fixed flex justify-center items-start relative p-8">
+        <div className="absolute min-h-full inset-0 bg-black bg-cover opacity-50"></div>
         <div className="relative w-full max-w-6xl bg-amber-50 rounded-lg p-8 m-4">
         <h1 className="text-black text-center mb-4 pt-8">What's making you feel anxious?</h1>
         <div className="border-b-2 border-black mb-6"></div>
@@ -362,18 +362,21 @@ const AddAnxiety: React.FC = () => {
 
             {/* Display factors for selected anxiety */}
             {selectedAnxieties && (
-                <div>
-                    <h3 className="text-black text-center mt-4">What about {anxieties.find((a) => a.anx_id === selectedAnxieties)?.anx_name} causes anxiety?</h3>
+                <div className="mb-8">
+                    <h3 className="text-black text-center mt-4 mb-6">What about {anxieties.find((a) => a.anx_id === selectedAnxieties)?.anx_name} causes anxiety?</h3>
+                    <div className="space-y-3 max-w-2xl mx-auto">
                     {factors.map((factor) => (
-                        <label key={factor.factor_id} className="block text-black pl-40">
+                        <label key={factor.factor_id} className="flex items-center p-4 bg-slate-400 rounded-lg cursor-pointer hover:bg-slate-500 transition-colors">
                             <input
                                 type="checkbox"
                                 checked={selectedFactors.some((f) => f.factor_id === factor.factor_id)}
                                 onChange={() => handleFactorSelect(factor)}
+                                className="w-6 h-6 mr-4 accent-slate-600"
                             />
-                            {factor.factor_name}
+                            <span className="text-white font-medium text-xl">{factor.factor_name}</span>
                         </label>
                     ))}
+                </div>
                 </div>
             )}
 
