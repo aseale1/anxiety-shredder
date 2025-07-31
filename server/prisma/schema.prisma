@@ -16,7 +16,9 @@ model anxiety_source {
   factor     factor[]
   user_anx   user_anx[]
 
-  creator    users?       @relation("CustomAnxietySources", fields: [created_by], references: [firebase_uid])
+  creator           users?  @relation("CustomAnxietySources", fields: [created_by], references: [firebase_uid])
+  users             users?  @relation(fields: [usersFirebase_uid], references: [firebase_uid])
+  usersFirebase_uid String? @db.VarChar(255)
 
   @@unique([anx_name, created_by])
 }
@@ -36,7 +38,7 @@ model challenges {
   anx_id              Int?
   chall_level         String?               @db.VarChar(255)
   completed           Boolean?              @default(false)
-  description         String?               @db.VarChar
+  description         String?               @db.VarChar(255)
   chall_conditions    chall_conditions[]
   challenge_reminders challenge_reminders[]
   anxiety_source      anxiety_source?       @relation(fields: [anx_id], references: [anx_id], onDelete: Cascade, onUpdate: NoAction)
@@ -111,5 +113,9 @@ model users {
   first_name          String?               @db.VarChar(255)
   anxiety_source      anxiety_source[]
   challenge_reminders challenge_reminders[]
-  custom_anxieties anxiety_source[]  @relation("CustomAnxietySources")
+  custom_anxieties    anxiety_source[]      @relation("CustomAnxietySources")
+  challenges          challenges[]
+  user_anx            user_anx[]
+  user_con_rating     user_con_rating[]
+  user_factor         user_factor[]
 }
