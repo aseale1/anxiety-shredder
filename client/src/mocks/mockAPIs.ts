@@ -15,11 +15,6 @@ interface Condition {
     condition_name: string;
     con_desc: string;
   }
-interface userConditionRating {
-    firebase_uid: string;
-    con_id: number;
-    rating: number;
-}
 interface customAnxietyRequest {
     anx_name: string;
     factors: {

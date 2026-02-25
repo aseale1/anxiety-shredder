@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 interface Factor {
     id: string; //temporary ID for frontend use
@@ -14,13 +14,13 @@ interface Condition {
 
 const CustomAnxiety: React.FC = () => {
     const navigate = useNavigate();
-    const demoUser = { uid: 'demo-user' };
+    //const demoUser = { uid: 'demo-user' };
     const [anxietyName, setAnxietyName] = useState('');
     const [factors, setFactors] = useState<Factor[]>([]);
     const [validationErrors, setValidationErrors] = useState<string[]>([]);
     const [canSubmit, setCanSubmit] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [selectedFactors, setSelectedFactors] = useState<any[]>([]); 
+    const [_, setSelectedFactors] = useState<any[]>([]); 
     
     useEffect(() => {
         if (factors.length === 0) {
