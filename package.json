@@ -11,7 +11,8 @@
   "description": "",
   "devDependencies": {
     "@types/nodemailer": "^6.4.17",
-    "prisma": "^6.7.0"
+    "prisma": "^6.7.0",
+    "vite": "^6.4.1"
   },
   "dependencies": {
     "@prisma/client": "^6.8.2",
