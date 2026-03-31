@@ -260,7 +260,7 @@ const AddAnxiety: React.FC = () => {
 
         const hasRating1 = ratingCounts[1] >= 3;
         const hasRating2 = ratingCounts[2] >= 3;
-        const hasRating3 = ratingCounts[3] >= 1;
+        const hasRating3 = ratingCounts[3] >= 3;
 
         if (!hasRating1) {
             errors.push("Please rate at least 3 conditions as '1-somewhat anxious'");
@@ -271,7 +271,7 @@ const AddAnxiety: React.FC = () => {
         }
         
         if (!hasRating3) {
-            errors.push("Please rate at least 1 condition as '3-extremely anxious'");
+            errors.push("Please rate at least 3 conditions as '3-extremely anxious'");
         }
 
         const ratedFactors = new Set([
@@ -283,8 +283,12 @@ const AddAnxiety: React.FC = () => {
         if (ratedFactors.size < 3) {
             errors.push("Please rate conditions from at least 3 different factors.");
         }
+
+        const ratedConditions = new Set(rankings.map(r => r.con_id));
+        const allAssignedConditions = conditions.every(c => ratedConditions.has(c.con_id));
+
         setValidationErrors(errors);
-        setCanSubmit(errors.length === 0);
+        setCanSubmit(errors.length === 0 && allAssignedConditions);
     };
 
     const handleDragStart = (e: React.DragEvent, condition: any) => {
@@ -544,9 +548,14 @@ const AddAnxiety: React.FC = () => {
             
             {/* Generate Mountain */}
             <div className="flex justify-center mt-4">
-            <button onClick={handleSubmit} className="btn-secondary">Generate Mountain</button>
+            <button 
+                className="btn-secondary"
+                onClick={handleSubmit}
+                disabled={!canSubmit}
+                >
+                    Generate Mountain
+                </button>
             </div>
-            
         </div>
         </div>
 

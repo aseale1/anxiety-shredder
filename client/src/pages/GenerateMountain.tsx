@@ -183,7 +183,7 @@ const GenerateMountain: React.FC = () => {
           )}
         </div>
         <div className="text-center">
-          <h2 className="mt-4 text-xl italic font-afacad text-black">Below is a list of all possible challenges based on your condition ratings</h2>
+          <h2 className="mt-4 text-xl italic font-afacad text-black">Below is a list of all possible challenges based on your condition ratings. Refresh the page to see new combinations</h2>
         </div>
 
         {/* Loading state */}
@@ -235,6 +235,11 @@ const GenerateMountain: React.FC = () => {
           </div>
         )}
       </div>
+        <button 
+          className="btn-secondary" 
+          onClick={() => window.print()}>
+          Print this page
+        </button>
     </div>
   );
 };

@@ -449,28 +449,21 @@ export const mockCreateCustomAnxiety = (requestData: customAnxietyRequest) => {
     const selectedConditions: Condition[] = [];
     const usedFactors = new Set<number>();
 
+    const selectedFactorIds = selectedConditions.map(c => c.factor_id);
     for (const rating of [1, 2, 3]) {
         const requiredCount = required[rating as 1 | 2 | 3];
         const available = [...(byRating[rating] || [])].sort(() => 0.5 - Math.random());
-
+        
         let count = 0;
         for (const condition of available) {
             if (count >= requiredCount) break;
-            if (!usedFactors.has(condition.factor_id)) {
+            if (!usedFactors.has(condition.factor_id) && !selectedFactorIds.includes(condition.factor_id)) {
                 selectedConditions.push(condition);
                 usedFactors.add(condition.factor_id);
                 count++;
             }
         }
 
-        // Allow factors to be reused if not enough unique conditions are available
-        if (count < requiredCount) {
-            const extra = available
-            .filter(c => !selectedConditions.includes(c))
-            .sort(() => 0.5 - Math.random())
-            .slice(0, requiredCount - count);
-      selectedConditions.push(...extra);
-    }
   }
 
   if (selectedConditions.length < 3) {
