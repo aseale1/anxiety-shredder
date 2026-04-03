@@ -3,8 +3,19 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-    build: {
-    outDir: "../client"
+  server: {
+    watch: {
+      usePolling: true,
+      interval: 100
+    },
+    hmr: {
+      protocol: 'ws',
+      host: 'localhost',
+      port: 5173
+    }
+  },
+  build: {
+    outDir: "dist"
   }
 })
 
