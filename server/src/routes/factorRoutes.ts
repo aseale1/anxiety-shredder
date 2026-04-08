@@ -6,7 +6,7 @@ const factorRouter = Router();
   
 // Fetch all factors for some anxiety
 const getFactorsForAnx = async (req: Request, res: Response) => {
-    const anx_id = parseInt(req.params.anx_id);
+    const anx_id = parseInt(req.params.anx_id as string, 10);
       try {
         const factors = await prisma.factor.findMany({
           where: { anx_id },
