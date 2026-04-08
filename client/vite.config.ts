@@ -8,11 +8,6 @@ export default defineConfig({
       usePolling: true,
       interval: 100
     },
-    hmr: {
-      protocol: 'ws',
-      host: 'localhost',
-      port: 5173
-    }
   },
   build: {
     outDir: "dist"
