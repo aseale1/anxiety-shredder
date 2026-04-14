@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import AddAnxiety from './pages/AddAnxiety';
 import GenerateMountain from './pages/GenerateMountain';
-import CustomAnxiety from './pages/CustomAnxiety.tsx';
+import CustomAnxiety from './pages/CustomAnxiety';
 
 const App = () => {
   return (

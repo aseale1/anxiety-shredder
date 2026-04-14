@@ -192,13 +192,14 @@ const AddAnxiety: React.FC = () => {
 };
     
     const handleRankingChange = (condition_id: number | null, factor_id: number, condition_name: string, rating: number) => {
-        console.log('condition_id when handleRankingChange:', condition_id);
+        // console.log('condition_id when handleRankingChange:', condition_id);
         console.log(`Rating for condition ${condition_name} changed to ${rating}`);
         
         if (condition_id === null || condition_id === undefined) {
             console.error("condition_id is null or undefined for condition:", condition_name);
             return;
         }
+        
         
         setRankings((prevRankings) => {
         const newRankings = [...prevRankings];
@@ -342,6 +343,8 @@ const AddAnxiety: React.FC = () => {
         navigate(`/generate-mountain/${selectedAnxieties}`);
     };
 
+    const allConditionsAssigned = conditions.length > 0 && conditions.every(c => rankings.some(r => r.con_id === c.con_id));
+
     return (
         <div className="min-h-screen w-screen bg-mountain bg-cover bg-center bg-fixed flex justify-center items-start relative p-8">
         <div className="absolute min-h-full inset-0 bg-black bg-cover opacity-50"></div>
@@ -390,7 +393,7 @@ const AddAnxiety: React.FC = () => {
             {selectedFactorName && conditions && conditions.length > 0 && (
         <div>
             <h3 className="text-black text-center mb-2 mt-4">
-            When it comes to those factors, how anxious do the following conditions make you feel?
+            When it comes to these factors, how anxious do the following conditions make you feel?
             </h3>
             <p className="italic text-black text-center mb-4">
             drag and drop to sort conditions into the categories that best describe how anxious they make you feel
@@ -549,15 +552,17 @@ const AddAnxiety: React.FC = () => {
             </div>
             
             {/* Generate Mountain */}
-            <div className="flex justify-center mt-4">
-            <button 
-                className="btn-secondary"
-                onClick={handleSubmit}
-                disabled={!canSubmit}
-                >
-                    Generate Mountain
-                </button>
-            </div>
+            {allConditionsAssigned && (
+                <div className="flex justify-center mt-4">
+                    <button 
+                        className="btn-secondary"
+                        onClick={handleSubmit}
+                        //disabled={!canSubmit}
+                    >
+                        Generate Mountain
+                    </button>
+                </div>
+            )}
         </div>
         </div>
 

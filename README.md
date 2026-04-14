@@ -13,5 +13,5 @@ Web Hosting (for WordPress): Vercel
 --Quick Start--
 
 To run the app:
-1. Navigate to the client folder and run the command 'npm install' to get all the dependencies, then run 'npm run dev' to start the server.
+1. Navigate to the root folder and run the command 'npm update' to update all the dependencies, then run 'npm run client:dev' to start the server.
 2. Follow the link output in the client terminal to view the app in your browser.
