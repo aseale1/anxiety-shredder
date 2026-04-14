@@ -18,6 +18,9 @@ const AddAnxiety: React.FC = () => {
     const [selectedAnxieties, setSelectedAnxieties] = useState<number | null>(null);
     const [factors, setFactors] = useState<{ factor_id: number; factor_name: string }[]>([]);
     const [selectedFactors, setSelectedFactors] = useState<{ factor_id: number; factor_name: string }[]>([]);
+    const [customFactors, setCustomFactors] = useState<Array<{ factor_id: number; factor_name: string; conditions: Array<{ con_id: number; factor_id: number; condition_name: string; con_desc?: string }> }>>([]);
+    const [nextCustomFactorId, setNextCustomFactorId] = useState(-1);
+    const [nextCustomConditionId, setNextCustomConditionId] = useState(-1);
     const [conditions, setConditions] = useState<Condition[]>([]);
     const [rankings, setRankings] = useState<{ con_id: number; rating: number }[]>([]);  
     const [selectedFactorName, setSelectedFactorName] = useState<string | null>(null);
@@ -74,9 +77,21 @@ const AddAnxiety: React.FC = () => {
         }
     }, [location.state]);
 
+    useEffect(() => {
+        validateSelections();
+    }, [rankings, conditions]);
+
+    useEffect(() => {
+        const names = selectedFactors.map(f => f.factor_name).filter(name => name.trim().length > 0);
+        setSelectedFactorName(names.length > 0 ? names.join(", ") : null);
+    }, [selectedFactors]);
+
     const handleAnxietySelect = async (anxiety: any) => {
         setSelectedAnxieties(anxiety);
         setSelectedFactors([]);
+        setCustomFactors([]);
+        setNextCustomFactorId(-1);
+        setNextCustomConditionId(-1);
         setConditions([]);
         setRankings([]);
         setSelectedFactorName(null);
@@ -137,18 +152,8 @@ const AddAnxiety: React.FC = () => {
                 return !conditionBelongsToFactor;
             }));
             
-            const newFactorNames = selectedFactors
-                .filter(f => f.factor_id !== factor.factor_id)
-                .map(f => f.factor_name)
-                .join(", ");
-            setSelectedFactorName(newFactorNames || null);
             } else {
             setSelectedFactors([...selectedFactors, factor]);
-            
-            const newFactorName = selectedFactorName 
-                ? `${selectedFactorName}, ${factor.factor_name}` 
-                : factor.factor_name;
-            setSelectedFactorName(newFactorName);
             
             if (!demoUser) {
                 console.error("User authentication error");
@@ -188,9 +193,83 @@ const AddAnxiety: React.FC = () => {
         };
         fetchConditions();
     }
-    setTimeout(() => validateSelections(), 0);
-};
-    
+    };
+
+    const addCustomFactor = () => {
+        const factorId = nextCustomFactorId;
+        setNextCustomFactorId(prev => prev - 1);
+        const newFactor = { factor_id: factorId, factor_name: '', conditions: [] };
+        setCustomFactors(prev => [...prev, newFactor]);
+        setSelectedFactors(prev => [...prev, { factor_id: factorId, factor_name: '' }]);
+    };
+
+    const removeCustomFactor = (factorId: number) => {
+        setCustomFactors(prev => prev.filter(factor => factor.factor_id !== factorId));
+        setSelectedFactors(prev => prev.filter(factor => factor.factor_id !== factorId));
+        setConditions(prev => prev.filter(condition => condition.factor_id !== factorId));
+        setRankings(prev => prev.filter(ranking => {
+            const removedConditionIds = conditions
+                .filter(condition => condition.factor_id === factorId)
+                .map(condition => condition.con_id);
+            return !removedConditionIds.includes(ranking.con_id);
+        }));
+    };
+
+    const updateCustomFactorName = (factorId: number, name: string) => {
+        setCustomFactors(prev => prev.map(factor =>
+            factor.factor_id === factorId ? { ...factor, factor_name: name } : factor
+        ));
+        setSelectedFactors(prev => prev.map(factor =>
+            factor.factor_id === factorId ? { ...factor, factor_name: name } : factor
+        ));
+    };
+
+    const addCustomCondition = (factorId: number) => {
+        const conId = nextCustomConditionId;
+        setNextCustomConditionId(prev => prev - 1);
+
+        const newCondition = {
+            con_id: conId,
+            factor_id: factorId,
+            condition_name: '',
+            con_desc: '',
+            user_con_rating: []
+        };
+
+        setCustomFactors(prev => prev.map(factor =>
+            factor.factor_id === factorId
+                ? { ...factor, conditions: [...factor.conditions, newCondition] }
+                : factor
+        ));
+        setConditions(prev => [...prev, newCondition]);
+    };
+
+    const updateCustomCondition = (factorId: number, conditionId: number, field: 'condition_name' | 'con_desc', value: string) => {
+        setCustomFactors(prev => prev.map(factor =>
+            factor.factor_id === factorId
+                ? {
+                    ...factor,
+                    conditions: factor.conditions.map(condition =>
+                        condition.con_id === conditionId ? { ...condition, [field]: value } : condition
+                    )
+                }
+                : factor
+        ));
+        setConditions(prev => prev.map(condition =>
+            condition.con_id === conditionId ? { ...condition, [field]: value } : condition
+        ));
+    };
+
+    const removeCustomCondition = (factorId: number, conditionId: number) => {
+        setCustomFactors(prev => prev.map(factor =>
+            factor.factor_id === factorId
+                ? { ...factor, conditions: factor.conditions.filter(condition => condition.con_id !== conditionId) }
+                : factor
+        ));
+        setConditions(prev => prev.filter(condition => condition.con_id !== conditionId));
+        setRankings(prev => prev.filter(ranking => ranking.con_id !== conditionId));
+    };
+
     const handleRankingChange = (condition_id: number | null, factor_id: number, condition_name: string, rating: number) => {
         // console.log('condition_id when handleRankingChange:', condition_id);
         console.log(`Rating for condition ${condition_name} changed to ${rating}`);
@@ -245,8 +324,6 @@ const AddAnxiety: React.FC = () => {
         
         return newRankings;
     });
-    
-    validateSelections();
     }
 
     const validateSelections = () => {
@@ -258,6 +335,20 @@ const AddAnxiety: React.FC = () => {
         if (selectedFactors.length < 3 ) {
             errors.push("Please select at least 3 factors.");
         }
+
+        customFactors.forEach((factor, index) => {
+            if (!factor.factor_name.trim()) {
+                errors.push(`Custom factor ${index + 1} must have a name.`);
+            }
+            if (factor.conditions.length === 0) {
+                errors.push(`Custom factor ${index + 1} must have at least one condition.`);
+            }
+            factor.conditions.forEach((condition, conditionIndex) => {
+                if (!condition.condition_name.trim()) {
+                    errors.push(`Condition ${conditionIndex + 1} for custom factor ${index + 1} must have a name.`);
+                }
+            });
+        });
 
         const hasRating1 = ratingCounts[1] >= 3;
         const hasRating2 = ratingCounts[2] >= 3;
@@ -343,8 +434,6 @@ const AddAnxiety: React.FC = () => {
         navigate(`/generate-mountain/${selectedAnxieties}`);
     };
 
-    const allConditionsAssigned = conditions.length > 0 && conditions.every(c => rankings.some(r => r.con_id === c.con_id));
-
     return (
         <div className="min-h-screen w-screen bg-mountain bg-cover bg-center bg-fixed flex justify-center items-start relative p-8">
         <div className="absolute min-h-full inset-0 bg-black bg-cover opacity-50"></div>
@@ -385,6 +474,89 @@ const AddAnxiety: React.FC = () => {
                             <span className="text-white font-medium text-xl">{factor.factor_name}</span>
                         </label>
                     ))}
+                    <div className="mt-6 flex justify-start">
+                        <button
+                            className="btn-primary bg-slate-400 rounded-lg text-white py-3 px-6"
+                            onClick={addCustomFactor}
+                        >
+                            + Add Your Own
+                        </button>
+                    </div>
+
+                    {customFactors.length > 0 && (
+                        <div className="mt-6 space-y-6">
+                            <h4 className="text-black text-xl font-bold">Custom Factors</h4>
+                            {customFactors.map((factor, index) => (
+                                <div key={factor.factor_id} className="p-4 rounded-lg bg-slate-200 border border-slate-300">
+                                    <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-3 mb-4">
+                                        <div>
+                                            <h5 className="text-black font-semibold">Custom Factor {index + 1}</h5>
+                                            <input
+                                                type="text"
+                                                value={factor.factor_name}
+                                                onChange={(e) => updateCustomFactorName(factor.factor_id, e.target.value)}
+                                                placeholder="Enter a factor name"
+                                                className="mt-2 w-full p-2 border border-gray-300 rounded-lg"
+                                            />
+                                        </div>
+                                        <button
+                                            className="btn-red px-4 py-2"
+                                            onClick={() => removeCustomFactor(factor.factor_id)}
+                                        >
+                                            Remove Factor
+                                        </button>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center">
+                                            <h6 className="text-black font-medium">Conditions for this factor</h6>
+                                            <button
+                                                className="btn-primary px-4 py-2"
+                                                onClick={() => addCustomCondition(factor.factor_id)}
+                                            >
+                                                Add Condition
+                                            </button>
+                                        </div>
+
+                                        {factor.conditions.length === 0 && (
+                                            <p className="text-sm text-gray-700">Add at least one custom condition for this factor.</p>
+                                        )}
+
+                                        {factor.conditions.map(condition => (
+                                            <div key={condition.con_id} className="grid gap-3 md:grid-cols-2 items-end p-3 bg-white rounded-lg border border-gray-300">
+                                                <div>
+                                                    <label className="block text-black mb-1">Condition Name</label>
+                                                    <input
+                                                        type="text"
+                                                        value={condition.condition_name}
+                                                        onChange={(e) => updateCustomCondition(factor.factor_id, condition.con_id, 'condition_name', e.target.value)}
+                                                        placeholder="Enter condition text"
+                                                        className="w-full p-2 border border-gray-300 rounded-lg"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-black mb-1">Condition Description</label>
+                                                    <input
+                                                        type="text"
+                                                        value={condition.con_desc || ''}
+                                                        onChange={(e) => updateCustomCondition(factor.factor_id, condition.con_id, 'con_desc', e.target.value)}
+                                                        placeholder="Optional description"
+                                                        className="w-full p-2 border border-gray-300 rounded-lg"
+                                                    />
+                                                </div>
+                                                <button
+                                                    className="btn-red px-4 py-2 w-full md:w-auto"
+                                                    onClick={() => removeCustomCondition(factor.factor_id, condition.con_id)}
+                                                >
+                                                    Remove Condition
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
                 </div>
             )}
@@ -552,12 +724,11 @@ const AddAnxiety: React.FC = () => {
             </div>
             
             {/* Generate Mountain */}
-            {allConditionsAssigned && (
+            {canSubmit && (
                 <div className="flex justify-center mt-4">
                     <button 
                         className="btn-secondary"
                         onClick={handleSubmit}
-                        //disabled={!canSubmit}
                     >
                         Generate Mountain
                     </button>
