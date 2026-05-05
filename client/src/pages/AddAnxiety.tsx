@@ -438,7 +438,7 @@ const AddAnxiety: React.FC = () => {
         <div className="min-h-screen w-screen bg-mountain bg-cover bg-center bg-fixed flex justify-center items-start relative p-8">
         <div className="absolute min-h-full inset-0 bg-black bg-cover opacity-50"></div>
         <div className="relative w-full max-w-6xl bg-amber-50 rounded-lg p-8 m-4">
-        <h1 className="text-black text-center mb-4 pt-8">
+        <h1 className="text-black uppercase text-center mb-4 pt-8">
             What's making you feel anxious?
             </h1>
         <div className="border-b-2 border-black mb-6"></div>
@@ -456,6 +456,13 @@ const AddAnxiety: React.FC = () => {
                         {anxiety.anx_name}
                     </button>
                 ))}
+            </div>
+            
+            {/* Custom Anxiety */}
+            <div className="flex justify-center mt-4">
+            <button 
+            onClick={() => navigate("/custom-anxiety")}  
+            className="btn-navigate">Create Custom Anxiety Source</button>
             </div>
 
             {/* Display factors for selected anxiety */}
@@ -715,13 +722,6 @@ const AddAnxiety: React.FC = () => {
             )}
         </div>
         )}
-
-            {/* Custom Anxiety */}
-            <div className="flex justify-center mt-4">
-            <button 
-            onClick={() => navigate("/custom-anxiety")}  
-            className="btn-navigate">Create Custom Anxiety Source</button>
-            </div>
             
             {/* Generate Mountain */}
             {canSubmit && (

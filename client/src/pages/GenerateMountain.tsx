@@ -176,14 +176,22 @@ const GenerateMountain: React.FC = () => {
    <div className="min-h-screen w-screen bg-white p-4">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="flex justify-center items-center mb-6">
-          {anxiety && (
-            <h1 className="text-4xl text-black">
-              Your "{anxiety.anx_name}" Mountain </h1>
-          )}
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex-1 flex justify-center">
+            {anxiety && (
+              <h1 className="text-4xl text-black uppercase">
+                Your "{anxiety.anx_name}" Mountain </h1>
+            )}
+          </div>
+          <button 
+            className="btn-secondary" 
+            onClick={() => window.print()}>
+            Print this page
+          </button>
         </div>
+
         <div className="text-center">
-          <h2 className="mt-4 text-xl italic font-afacad text-black">Below is a list of all possible challenges based on your condition ratings. Refresh the page to see new combinations!</h2>
+          <h2 className="mt-4 text-xl italic font-afacad text-black">Below is a list of all the possible challenges for this mountain. Refresh the page to see new combinations!</h2>
         </div>
 
         {/* Loading state */}
@@ -235,11 +243,7 @@ const GenerateMountain: React.FC = () => {
           </div>
         )}
       </div>
-        <button 
-          className="btn-secondary" 
-          onClick={() => window.print()}>
-          Print this page
-        </button>
+        
     </div>
   );
 };
