@@ -26,9 +26,9 @@
 }
 
 @layer base {
-  /* Sedgwick Ave Display Styles */
+  /* Accent Header Styles */
   h1, h2 {
-    font-family: 'Sedgwick Ave Display', cursive;
+    font-family: 'Faster One', static;
     font-weight: 400;
   }
   h1 {

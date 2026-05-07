@@ -30,6 +30,7 @@ const AddAnxiety: React.FC = () => {
     const [canSubmit, setCanSubmit] = useState(false);
     const [customAnxietyData, setCustomAnxietyData] = useState<any>(null);
     const [isCustomAnxiety, setIsCustomAnxiety] = useState(false);
+    const [showTooltips, setShowTooltips] = useState(false);
 
     useEffect(() => {
         const fetchMockAnxieties = async () => {
@@ -45,10 +46,8 @@ const AddAnxiety: React.FC = () => {
         if (location.state?.customAnxietyId) {
             const customData = sessionStorage.getItem('current-custom-anxiety');
             if (customData) {
-                const parsedData = JSON.parse(customData);
-                //setAnxieties(prev => [...prev, { anx_id: parsedData.anxiety.anx_id, anx_name: parsedData.anxiety.anx_name }]);
-                
-                 const customAnxiety = {
+                const parsedData = JSON.parse(customData)
+                const customAnxiety = {
                     anx_id: parsedData.anxiety.anx_id,
                     anx_name: parsedData.anxiety.anx_name
                 };
@@ -271,7 +270,6 @@ const AddAnxiety: React.FC = () => {
     };
 
     const handleRankingChange = (condition_id: number | null, factor_id: number, condition_name: string, rating: number) => {
-        // console.log('condition_id when handleRankingChange:', condition_id);
         console.log(`Rating for condition ${condition_name} changed to ${rating}`);
         
         if (condition_id === null || condition_id === undefined) {
@@ -438,6 +436,18 @@ const AddAnxiety: React.FC = () => {
         <div className="min-h-screen w-screen bg-mountain bg-cover bg-center bg-fixed flex justify-center items-start relative p-8">
         <div className="absolute min-h-full inset-0 bg-black bg-cover opacity-50"></div>
         <div className="relative w-full max-w-6xl bg-amber-50 rounded-lg p-8 m-4">
+        
+        {/* Tooltip Toggle Button */}
+        <div className="absolute top-8 right-8">
+            <button
+                onClick={() => setShowTooltips(!showTooltips)}
+                className="bg-gray-500 hover:bg-gray-250 text-white font-bold rounded-lg font-large transition-colors"
+                title="Toggle helpful tooltips"
+            >
+                {showTooltips ? '?' : '?'}
+            </button>
+        </div>
+
         <h1 className="text-black uppercase text-center mb-4 pt-8">
             What's making you feel anxious?
             </h1>
@@ -445,6 +455,11 @@ const AddAnxiety: React.FC = () => {
 
             {/* Display untracked anxieties */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                {showTooltips && (
+                    <div className="md:col-span-3 bg-blue-100 border-l-4 border-blue-500 p-4 mb-4 rounded">
+                        <p className="text-blue-800"><strong>💡 Tip:</strong> Start by selecting the anxiety source that's bothering you most.</p>
+                    </div>
+                )}
                 {anxieties.map((anxiety) => (
                     <button 
                         key={anxiety.anx_id}
@@ -468,7 +483,12 @@ const AddAnxiety: React.FC = () => {
             {/* Display factors for selected anxiety */}
             {selectedAnxieties && (
                 <div className="mb-8">
-                    <h3 className="text-black text-center mt-4 mb-6">What about {anxieties.find((a) => a.anx_id === selectedAnxieties)?.anx_name} causes anxiety?</h3>
+                    <h3 className="text-black text-center mt-4 mb-6">What about {anxieties.find((a) => a.anx_id === selectedAnxieties)?.anx_name} makes you feel anxious?</h3>
+                    {showTooltips && (
+                        <div className="bg-blue-100 border-l-4 border-blue-500 p-4 mb-4 rounded">
+                            <p className="text-blue-800"><strong>💡 Tip:</strong> Select at least 3 features that make this hard for you. You can also create your own!</p>
+                        </div>
+                    )}
                     <div className="space-y-3 max-w-2xl mx-auto">
                     {factors.map((factor) => (
                         <label key={factor.factor_id} className="flex items-center p-4 bg-slate-400 rounded-lg cursor-pointer hover:bg-slate-500 transition-colors">
@@ -486,7 +506,7 @@ const AddAnxiety: React.FC = () => {
                             className="btn-primary bg-slate-400 rounded-lg text-white py-3 px-6"
                             onClick={addCustomFactor}
                         >
-                            + Add Your Own
+                            + Something Else...
                         </button>
                     </div>
 
@@ -577,6 +597,11 @@ const AddAnxiety: React.FC = () => {
             <p className="italic text-black text-center mb-4">
             drag and drop to sort conditions into the categories that best describe how anxious they make you feel
             </p>
+            {showTooltips && (
+                <div className="bg-blue-100 border-l-4 border-blue-500 p-4 mb-4 rounded">
+                    <p className="text-blue-800"><strong>💡 Tip:</strong> Rate at least 3 conditions for each feature. Drag conditions from the "Unassigned" section into the columns below to rate them.</p>
+                </div>
+            )}
 
             {/* Unassigned Conditions */}
             {conditions.filter(condition => !rankings.find(r => r.con_id === condition.con_id)).length > 0 && (
@@ -725,7 +750,7 @@ const AddAnxiety: React.FC = () => {
             
             {/* Generate Mountain */}
             {canSubmit && (
-                <div className="flex justify-center mt-4">
+                <div className="flex flex-col items-center gap-4 mt-4">
                     <button 
                         className="btn-secondary"
                         onClick={handleSubmit}
